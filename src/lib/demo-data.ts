@@ -18,3 +18,39 @@ export const transactions = [
   { id: "TX-0243", member: 7, type: "social", amount: 5000, date: "2026-10-05", time: "11:06", method: "Mobile Money" },
 ];
 export const money = (amount: number) => new Intl.NumberFormat("en-US").format(amount);
+
+export type Member = typeof members[number];
+export type ContributionKind = "savings" | "social" | "penalty";
+export type MemberRecord = {
+  id: string;
+  memberId: string;
+  type: ContributionKind;
+  amount: number;
+  date: string;
+  time: string;
+  method: string;
+  balance: number;
+  note: "monthly" | "extra" | "social" | "penalty";
+};
+
+// Consistent, fictional history for every sample member. Dates and times are Kigali local time.
+export function getMemberRecords(member: Member): MemberRecord[] {
+  const index = members.findIndex(m => m.id === member.id);
+  const monthly = 25000 + index * 5000;
+  const base = [
+    { date: "2026-07-04", time: "10:24", type: "savings" as const, amount: monthly, method: "Mobile Money", note: "monthly" as const },
+    { date: "2026-07-04", time: "10:26", type: "social" as const, amount: 5000, method: "Mobile Money", note: "social" as const },
+    { date: "2026-08-05", time: "14:08", type: "savings" as const, amount: monthly, method: "Bank transfer", note: "monthly" as const },
+    { date: "2026-08-19", time: "11:35", type: "savings" as const, amount: 15000, method: "Mobile Money", note: "extra" as const },
+    { date: "2026-09-03", time: "09:12", type: "savings" as const, amount: monthly, method: "Bank transfer", note: "monthly" as const },
+    { date: "2026-09-03", time: "09:14", type: "social" as const, amount: 5000, method: "Bank transfer", note: "social" as const },
+  ].map((record, i) => ({ ...record, memberId: member.id, id: `RC-${member.id.slice(2)}-${String(i + 1).padStart(3, "0")}` }));
+  const recent = transactions.filter(tx => tx.member === index).map(tx => ({
+    id: tx.id, memberId: member.id, type: tx.type as ContributionKind, amount: tx.amount,
+    date: tx.date, time: tx.time, method: tx.method,
+    note: (tx.type === "savings" ? "monthly" : tx.type === "social" ? "social" : "penalty") as MemberRecord["note"],
+  }));
+  const records = [...base, ...recent].sort((a,b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`));
+  let balance = member.savings - records.filter(r => r.type === "savings").reduce((sum,r) => sum + r.amount,0);
+  return records.map(r => { if (r.type === "savings") balance += r.amount; return {...r, balance}; }).reverse();
+}

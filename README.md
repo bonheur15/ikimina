@@ -24,6 +24,7 @@ The production build is a static export in `out/`.
 
 - Overview with savings pool, participation and contribution visuals
 - Members with search, readiness filters and profile panels
+- Member contribution timelines and ledgers with month/type/search filters, exact Kigali timestamps, running savings balances and payment-detail previews
 - Savings and share register
 - Social fund and support allocations
 - Penalties and settlement status
@@ -39,6 +40,9 @@ All figures and member profiles are illustrative. The original Excel files are n
 
 - `src/components/dashboard.tsx`: shell, overview and recording preview
 - `src/components/workspace-views.tsx`: management screens
+- `src/components/member-history.tsx`: member timelines, ledgers and payment details
+- `public/images/`: generated editorial images used by the interface
+- `docs/image-prompts.md`: exact image prompts and provenance
 - `src/components/ui/`: shadcn/ui primitives
 - `src/lib/demo-data.ts`: fictional sample data
 - `src/app/globals.css`: brand theme, responsive layouts and reduced-motion support
