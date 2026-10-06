@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ikimina dashboard
 
-## Getting Started
+A UI-only savings-group workspace built with Next.js App Router, TypeScript, Tailwind CSS and shadcn/ui (Radix primitives).
 
-First, run the development server:
+## Run locally
 
-```bash
+```sh
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Validate and build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```sh
+npx tsc --noEmit
+npm run build
+```
 
-## Learn More
+The production build is a static export in `out/`.
 
-To learn more about Next.js, take a look at the following resources:
+## Included views
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Overview with savings pool, participation and contribution visuals
+- Members with search, readiness filters and profile panels
+- Savings and share register
+- Social fund and support allocations
+- Penalties and settlement status
+- Cashbook with incoming and outgoing entries
+- Reports with statement previews and yearly comparisons
+- Settings and English/Kinyarwanda switching
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scope
 
-## Deploy on Vercel
+All figures and member profiles are illustrative. The original Excel files are not imported or modified. Navigation, filters, language switching, dialogs and form previews work in the browser. Payments, member creation and settings are not saved; there is no backend, authentication, database or export workflow.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Main files
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/components/dashboard.tsx`: shell, overview and recording preview
+- `src/components/workspace-views.tsx`: management screens
+- `src/components/ui/`: shadcn/ui primitives
+- `src/lib/demo-data.ts`: fictional sample data
+- `src/app/globals.css`: brand theme, responsive layouts and reduced-motion support
+
+Kinyarwanda labels are provided as draft interface translations for review by a native speaker.
