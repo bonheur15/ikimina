@@ -48,3 +48,5 @@ All figures and member profiles are illustrative. The original Excel files are n
 - `src/app/globals.css`: brand theme, responsive layouts and reduced-motion support
 
 Kinyarwanda labels are provided as draft interface translations for review by a native speaker.
+
+Mobile layouts include safe-area-aware bottom navigation, a keyboard-accessible menu, labeled record cards in place of wide tables, larger touch controls, and responsive member timelines and receipts. English and Kinyarwanda layouts were checked at 360, 390, 430, and 768px widths.

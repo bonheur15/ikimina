@@ -4,12 +4,13 @@ import { useMemo, useState } from "react";
 import { CalendarDays, Check, ChevronRight, Clock3, Coins, CreditCard, HeartHandshake, List, Search, ShieldCheck, Wallet } from "lucide-react";
 import { Avatar, Brand, useT } from "./dashboard";
 import { getMemberRecords, money, type Member, type MemberRecord } from "@/lib/demo-data";
+import { ResponsiveTable as Table } from "@/components/responsive-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function MemberHistorySheet({member,onClose}: {member:Member|null,onClose:()=>void}) {
