@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+.git
+.hubfly
+assets
+docs
+.env*
+.openai
+hubfly.build.json
