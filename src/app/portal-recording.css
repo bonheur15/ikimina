@@ -1,0 +1,57 @@
+.member-picker { padding: 0; margin: 0; border: 0; min-width: 0; }
+.member-picker legend { font-size: 11px; font-weight: 500; color: #6e7f93; padding: 0; margin-bottom: 9px; }
+.member-picker .search-input { min-height: 46px; }
+.member-picker .search-input input { width: 100%; font-size: 12px; }
+.member-picker-options { border: 1px solid #e2e9ee; border-radius: 8px; margin-top: 8px; max-height: 176px; overflow-y: auto; overscroll-behavior: contain; }
+.member-picker-option { display: flex; gap: 10px; padding: 11px 13px; align-items: center; cursor: pointer; border-bottom: 1px solid #edf1f5; min-height: 58px; }
+.member-picker-option:last-child { border-bottom: 0; }
+.member-picker-option:hover, .member-picker-option:focus-within { background: #f1f8f3; }
+.member-picker-option input { accent-color: #377b59; width: 16px; height: 16px; flex-shrink: 0; }
+.member-picker-option > span:last-child, .member-picker-selected > span:not(.avatar) { min-width: 0; flex: 1; }
+.member-picker-option strong, .member-picker-selected strong { display: block; font-size: 12px; font-weight: 600; }
+.member-picker-option small, .member-picker-selected small { display: block; font-size: 10px; color: #8090a2; margin-top: 5px; }
+.member-picker-hint { display: block; margin-top: 8px; font-size: 10px; color: #8192a4; }
+.member-picker-selected { display: flex; align-items: center; gap: 11px; padding: 9px 12px; background: #eff7f1; border: 1px solid #dcebe0; border-radius: 8px; }
+.member-picker-selected button { padding: 8px; min-height: 44px; background: transparent; border: 0; font-size: 11px; color: #3c745a; }
+.member-picker-empty { display: flex; align-items: center; gap: 10px; padding: 20px; font-size: 12px; color: #76899c; line-height: 1.7; }
+.share-shortcuts { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; }
+.share-shortcuts button { min-height: 40px; padding: 8px 12px; background: #f6f8fa; border: 1px solid #e2e8ee; color: #697d92; font-size: 11px; border-radius: 6px; }
+.share-shortcuts button[aria-pressed="true"] { background: #eaf5ee; border-color: #96bda1; color: #3d7c56; }
+.share-calculation { display: flex; align-items: center; gap: 14px; padding: 16px; background: #edf6ef; border-radius: 8px; color: #3b7754; margin-top: 13px; }
+.share-calculation > svg { flex-shrink: 0; }
+.share-calculation span { font-size: 10px; }
+.share-calculation output { display: block; font-size: 23px; font-weight: 600; color: #214a37; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.share-calculation output small { font-size: 10px; font-weight: 400; margin-left: 4px; }
+.share-calculation p { font-size: 10px; margin-top: 6px; }
+.share-commitment { font-size: 10px; line-height: 1.7; color: #8794a4; margin-top: 8px; }
+.record-success-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.activity-shares { font-weight: 500; color: #62846f; }
+.stat > strong > small { font-size: 10px; font-weight: 400; letter-spacing: 0; color: #889bac; }
+.register-record-action { display: inline-flex; align-items: center; gap: 5px; padding: 8px 10px; min-height: 44px; border: 1px solid #dce7df; background: #f4f9f5; border-radius: 6px; color: #41755b; font-size: 11px; white-space: nowrap; }
+.social-support-panel { margin-top: 22px; }
+.register-top-action { margin-top: 9px; }
+
+@media (max-width: 700px) {
+  .member-picker legend { font-size: 12px; }
+  .member-picker .search-input input { font-size: 16px; }
+  .member-picker .search-input input::placeholder { font-size: 11px; }
+  .member-picker-options { max-height: 166px; }
+  .member-picker-selected { padding: 9px; gap: 9px; }
+  .member-picker-selected strong { font-size: 12px; }
+  .member-picker-selected small { font-size: 10px; }
+  .share-shortcuts { gap: 6px; }
+  .share-shortcuts button { min-height: 44px; padding: 8px 10px; font-size: 10px; flex: 1; }
+  .share-calculation output { font-size: 25px; }
+  .share-commitment { font-size: 11px; }
+  .record-success-actions { width: 100%; }
+  .record-success-actions .action { flex: 1; }
+  .register-member-table td:first-child { justify-content: flex-start; text-align: left; }
+  .register-member-table td:first-child::before { display: none; }
+  .register-record-action { margin-left: auto; }
+  .admin-portal .bottom-navigation a { font-size: 10px; }
+}
+
+@media (max-height: 900px) and (min-width: 1001px) {
+  .desktop-sidebar .sidebar-message { display: none; }
+  .desktop-sidebar .sidebar-lower { padding-top: 18px; }
+}
