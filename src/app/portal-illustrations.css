@@ -7,10 +7,10 @@
 .statement-controls-art { width: 148px; height: 148px; margin: -14px auto 10px; }
 .admin-pool > :not(.pool-illustration) { position: relative; z-index: 1; }
 .pool-illustration { position: absolute; width: 245px; height: 245px; right: 9px; top: 2px; pointer-events: none; }
-.illustrated-intro { display: flex; align-items: center; justify-content: space-between; gap: 25px; padding: 12px 30px; min-height: 155px; margin-bottom: 23px; border: 1px solid #e3ede6; border-radius: 13px; background: linear-gradient(110deg, #eff6f0, #f7faf5 65%, #f7f1e5); overflow: hidden; }
+.illustrated-intro { display: flex; align-items: center; justify-content: space-between; gap: 25px; padding: 12px 30px; min-height: 155px; margin-bottom: 23px; border: 1px solid var(--blue-soft); border-radius: 13px; background: linear-gradient(110deg, var(--blue-soft), #f5f8ff 65%, #f7f1e5); overflow: hidden; }
 .illustrated-intro > div { max-width: 530px; }
 .illustrated-intro h2 { font-size: 20px; letter-spacing: -.4px; line-height: 1.4; }
-.illustrated-intro p { font-size: 12px; line-height: 1.8; color: #788d80; margin-top: 7px; }
+.illustrated-intro p { font-size: 12px; line-height: 1.8; color: var(--blue); margin-top: 7px; }
 .illustrated-intro > .portal-illustration { width: 155px; height: 155px; flex-shrink: 0; margin: -12px 0; }
 
 @media (max-width: 1220px) {
