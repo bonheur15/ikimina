@@ -30,7 +30,7 @@ const navigation = [
 ] as const;
 
 export function Brand({ compact = false }: { compact?: boolean }) {
-  return <div className="brand"><svg viewBox="0 0 42 42" aria-hidden="true"><path d="M8 10v10c0 11 7 17 17 17M19 7v13c0 7 5 12 12 12M30 5v12c0 5 3 8 8 8" /></svg>{!compact && <span>ikimina<span className="brand-period">.</span></span>}</div>;
+  return <div className="brand"><Image src={compact ? "/images/elayo/favicon.png" : "/images/elayo/logo.png"} alt="Elayo Family" width={compact ? 932 : 3375} height={compact ? 855 : 1233} unoptimized className={compact ? "brand-logo compact" : "brand-logo"} /></div>;
 }
 export function Avatar({ member, small = false }: { member: typeof members[number], small?: boolean }) {
   return <span className={`member-avatar ${member.color} ${small ? "small" : ""}`}>{member.initials}</span>;
