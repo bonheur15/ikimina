@@ -1,5 +1,7 @@
 # Ikimina generated visuals
 
+The current portal uses the newer [mint/navy/gold illustration set](portal-image-prompts.md). The earlier assets and prompts below are preserved.
+
 Generated with the built-in `image_gen__imagegen` tool. Original PNGs are preserved in `assets/generated/`; optimized 1200px WebP versions used by the interface are in `public/images/`.
 
 ## Savings growth
