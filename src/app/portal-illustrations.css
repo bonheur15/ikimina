@@ -1,0 +1,57 @@
+.portal-illustration { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
+.balance-art { width: 220px; }
+.balance-art > .portal-illustration { position: absolute; width: 235px; height: 235px; top: 2px; right: -8px; }
+.balance-art .art-label { top: auto; bottom: 19px; left: 52px; }
+.balance-art .art-star { opacity: .55; }
+.statement-illustration { width: 155px; height: 145px; margin: -11px 0 5px -15px; }
+.statement-controls-art { width: 148px; height: 148px; margin: -14px auto 10px; }
+.admin-pool > :not(.pool-illustration) { position: relative; z-index: 1; }
+.pool-illustration { position: absolute; width: 245px; height: 245px; right: 9px; top: 2px; pointer-events: none; }
+.illustrated-intro { display: flex; align-items: center; justify-content: space-between; gap: 25px; padding: 12px 30px; min-height: 155px; margin-bottom: 23px; border: 1px solid #e3ede6; border-radius: 13px; background: linear-gradient(110deg, #eff6f0, #f7faf5 65%, #f7f1e5); overflow: hidden; }
+.illustrated-intro > div { max-width: 530px; }
+.illustrated-intro h2 { font-size: 20px; letter-spacing: -.4px; line-height: 1.4; }
+.illustrated-intro p { font-size: 12px; line-height: 1.8; color: #788d80; margin-top: 7px; }
+.illustrated-intro > .portal-illustration { width: 155px; height: 155px; flex-shrink: 0; margin: -12px 0; }
+
+@media (max-width: 1220px) {
+  .balance-art { width: 165px; }
+  .balance-art > .portal-illustration { width: 185px; height: 185px; top: 26px; right: -8px; }
+  .balance-art .art-label { left: 28px; }
+  .pool-illustration { width: 195px; height: 195px; right: -1px; top: 42px; }
+}
+
+@media (max-width: 700px) {
+  .balance-card { min-height: 270px; }
+  .balance-art { width: 150px; right: -2px; }
+  .balance-art > .portal-illustration { width: 156px; height: 156px; top: auto; bottom: 6px; right: -7px; }
+  .balance-art .art-label, .balance-art .star-two { display: none; }
+  .balance-art .star-one { top: 147px; left: 25px; font-size: 15px; }
+  .balance-card-bottom { flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 23px; }
+  .balance-bottom-divider { display: none !important; }
+  .statement-illustration { float: right; width: 115px; height: 115px; margin: 8px -13px 2px 8px; }
+  .statement-feature h2 { max-width: 210px; }
+  .statement-feature p { max-width: 230px; }
+  .statement-controls-art { float: right; width: 74px; height: 74px; margin: -7px -6px 8px 10px; }
+  .statement-controls .section-heading { min-height: 62px; }
+  .statement-controls > .field { clear: both; }
+  .admin-pool { min-height: 262px; }
+  .pool-illustration { width: 150px; height: 150px; top: auto; bottom: 7px; right: -3px; }
+  .pool-details { flex-direction: column; align-items: flex-start; gap: 9px; margin-top: 30px; max-width: 170px; }
+  .illustrated-intro { min-height: 132px; gap: 8px; padding: 18px; margin-bottom: 20px; }
+  .illustrated-intro h2 { font-size: 15px; letter-spacing: -.25px; }
+  .illustrated-intro p { font-size: 11px; line-height: 1.65; margin-top: 6px; }
+  .illustrated-intro > .portal-illustration { width: 100px; height: 100px; margin: -8px -8px -8px 0; }
+}
+
+@media (max-width: 390px) {
+  .balance-art > .portal-illustration { width: 145px; height: 145px; right: -4px; bottom: 7px; }
+  .pool-illustration { width: 138px; height: 138px; }
+  .statement-illustration { width: 96px; height: 105px; }
+  .statement-feature h2 { max-width: 180px; }
+  .illustrated-intro { padding: 16px; }
+  .illustrated-intro > .portal-illustration { width: 83px; height: 90px; }
+}
+
+@media print {
+  .portal-illustration, .illustrated-intro { display: none; }
+}
