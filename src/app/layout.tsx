@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { DM_Sans, Manrope } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
-const sans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans" });
-const display = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
-export const metadata: Metadata = { title: "Ikimina — Growing together", description: "A considered workspace for your savings group.", icons: { icon: "/icon.svg" } };
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <html lang="en"><body className={`${sans.variable} ${display.variable}`}>{children}</body></html>; }
+import { AccountProvider } from "@/components/account-dashboard";
+const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-poppins", display: "swap" });
+export const metadata: Metadata = { title: "Ikimina — Your savings, connected", description: "Your contributions, savings and statements. A personal space for every member of your savings group.", icons: { icon: "/icon.svg" } };
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <html lang="en" data-scroll-behavior="smooth"><body className={poppins.variable}><AccountProvider>{children}</AccountProvider></body></html>; }
