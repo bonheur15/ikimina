@@ -2,8 +2,8 @@ import Image from "next/image";
 
 const illustrations = {
   savings: "/images/portal/savings-card.svg",
-  community: "/images/portal/community-fund.webp",
-  records: "/images/portal/statement-records.webp",
+  community: "/images/elayo/cooperative.jpeg",
+  records: "/images/portal/statement-records-glassy-rwf.png",
 } as const;
 
 type Illustration = keyof typeof illustrations;
@@ -19,7 +19,7 @@ export function PortalIllustration({ asset, className = "", eager = false }: {
     height={768}
     unoptimized
     loading={eager ? "eager" : "lazy"}
-    className={`portal-illustration ${className}`}
+    className={`portal-illustration portal-illustration-${asset} ${className}`}
   />;
 }
 
