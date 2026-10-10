@@ -1,0 +1,16 @@
+.auth-page { min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); background: #fff; }
+.auth-card { width: min(420px, 100% - 40px); margin: auto; padding: 48px 0; display: flex; flex-direction: column; gap: 14px; }
+.auth-logo { width: 150px; height: auto; margin-bottom: 26px; }
+.auth-card h1 { font-size: 30px; letter-spacing: -.6px; }
+.auth-subtitle { color: var(--muted); margin-bottom: 10px; }
+.auth-form { gap: 16px; }
+.auth-form .action { width: 100%; justify-content: center; margin-top: 4px; }
+.auth-help { color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+.auth-identity { margin: 4px 0 6px; }
+.auth-art { position: relative; overflow: hidden; background: var(--navy); }
+.auth-art img { object-fit: cover; opacity: .82; }
+.auth-art div { position: absolute; left: 40px; right: 40px; bottom: 40px; color: #fff; display: grid; gap: 6px; text-shadow: 0 2px 18px rgb(0 0 0 / .45); }
+.auth-art strong { font-size: 26px; letter-spacing: -.4px; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 860px) { .auth-page { grid-template-columns: 1fr; } .auth-art { display: none; } }
