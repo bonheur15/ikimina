@@ -27,12 +27,43 @@
       "autoScale": false,
       "is24x7": true
     },
+    "ports": [
+      {
+        "id": "wUQnxbaYB9ax6xrQ",
+        "container": 3000,
+        "protocol": "http"
+      }
+    ],
     "process": {}
   },
+  "env": [
+    {
+      "name": "DATABASE_URL",
+      "value": "",
+      "secret": true,
+      "scope": "runtime"
+    },
+    {
+      "name": "AUTH_SECRET",
+      "value": "",
+      "secret": true,
+      "scope": "runtime"
+    },
+    {
+      "name": "AUTH_URL",
+      "value": "https://ikimina.eu1.hubfly.app",
+      "scope": "runtime"
+    },
+    {
+      "name": "ENABLE_DEMO",
+      "value": "true",
+      "scope": "runtime"
+    }
+  ],
   "remove": {},
   "metadata": {
-    "lastBuildId": "build_431c8ce2-3f2e-41d8-a120-848db0786a6e",
-    "lastImageDisplay": "hubcell.local/prj_2a52aa7d-0d16-4cad-9d51-a860c2c4c1f2/ikimina:build_431c8ce2-3f2e-41d8-a120-848db0786a6e-20261006T162152Z",
-    "lastDeployedAt": "2026-10-06T16:23:11Z"
+    "lastBuildId": "build_c813876c-1bee-4eaf-a02f-8ef0f7df3699",
+    "lastImageDisplay": "hubcell.local/prj_2a52aa7d-0d16-4cad-9d51-a860c2c4c1f2/ikimina:build_c813876c-1bee-4eaf-a02f-8ef0f7df3699-20261011T195006Z",
+    "lastDeployedAt": "2026-10-11T19:51:28Z"
   }
 }
