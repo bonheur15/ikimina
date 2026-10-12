@@ -17,7 +17,7 @@ Everything else happens in the app:
 
 1. **Database tables** are created and updated automatically when the server starts (`src/instrumentation.ts` applies the migrations in `drizzle/`).
 2. **First administrator:** with no administrator yet, `/login` sends you to `/setup` to create one. The page closes once an administrator exists. Set `SETUP_TOKEN` to also require a code there (recommended on a public server until setup is done).
-3. **Load the records (fresh installs only):** while the database has no members, **Settings** shows *Load the group’s records*. Upload `TOOLS FOR SAVINGS FOR SOFTWARE.xlsx` and the member email register once; the panel then disappears and records are managed in the app. Differences found in the workbooks are listed in **Reports → Import review**.
+3. **Load the records (fresh installs only):** while the database has no members, **Settings** shows _Load the group’s records_. Upload `TOOLS FOR SAVINGS FOR SOFTWARE.xlsx` and the member email register once; the panel then disappears and records are managed in the app. Differences found in the workbooks are listed in **Reports → Import review**.
 
 **Quick testing:** in development, open http://localhost:3000/demo for a ready-made administrator and member account — copy the details or sign in with one click. The demo member is linked to the first current member without an account, so it shows real imported records. The page returns 404 in production unless `ENABLE_DEMO=true` is set.
 
@@ -32,15 +32,15 @@ Members can make mobile money contributions and request loans or savings withdra
 
 ## What’s imported
 
-| Source | Becomes |
-| --- | --- |
-| Email register `Members` | Current roster (111), emails |
-| `INTEREST 2025` | District, national ID, phone; 2025 interest allocations |
-| `Saving` month columns | One savings record per member per month |
-| Literal deductions in `Saving!DR`/`DS` formulas | Adjustment (withdrawal) records, undated |
-| `Saving!EF/EE/EH` | Interest allocations up to 2021, 2022, 2023 |
-| `Social funds`, `Penalties` month columns | Social and penalty records per month |
-| `Cashbook` | Petty-cash entries in original order, with the date as written |
+| Source                                          | Becomes                                                        |
+| ----------------------------------------------- | -------------------------------------------------------------- |
+| Email register `Members`                        | Current roster (111), emails                                   |
+| `INTEREST 2025`                                 | District, national ID, phone; 2025 interest allocations        |
+| `Saving` month columns                          | One savings record per member per month                        |
+| Literal deductions in `Saving!DR`/`DS` formulas | Adjustment (withdrawal) records, undated                       |
+| `Saving!EF/EE/EH`                               | Interest allocations up to 2021, 2022, 2023                    |
+| `Social funds`, `Penalties` month columns       | Social and penalty records per month                           |
+| `Cashbook`                                      | Petty-cash entries in original order, with the date as written |
 
 Workbook subtotal cells are not imported; reports are calculated from the monthly records. Members found in registers but not in the email roster are kept as **former** members so no history is lost. Imported records show the month they count for (no exact payment day) and link back to their source cell.
 
