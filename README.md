@@ -23,6 +23,8 @@ Everything else happens in the app:
 
 ## Accounts
 
+Members can make mobile money contributions and request loans or savings withdrawals through **Payments & loans**. Administrators review requests and confirm payouts in **Mobile money**. See [XendlyPay setup and accounting](docs/mobile-money.md) for credentials, signed webhook setup, test-mode behavior, loan terms, fees and validation commands.
+
 - Members sign in with their **email or member code** and a password.
 - An administrator creates a single-use **sign-in link** from a member’s profile (Members → select member) and shares it privately. The link expires after 7 days; the same button creates password-reset links later. Members without an email can still sign in with their member code.
 - Sign-in can be blocked per member. Failed sign-ins are rate-limited.
