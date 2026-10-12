@@ -14,11 +14,26 @@ export async function GET(request: Request, ctx: RouteContext<"/api/reports/[id]
   const built = await buildReport(id, params, { page: 1, pageSize: 0, lang });
   if (!built) return new Response("Unknown report", { status: 404 });
   const { table } = built;
-  const name = `elayo-${[table.title, table.subtitle].join("-").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80)}`;
+  const name = `elayo-${[table.title, table.subtitle]
+    .join("-")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 80)}`;
   if (url.searchParams.get("format") === "csv") {
-    return new Response(reportCsv(table), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="${name}.csv"`, "Cache-Control": "private, no-store" } });
+    return new Response(reportCsv(table), {
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${name}.csv"`,
+        "Cache-Control": "private, no-store",
+      },
+    });
   }
   return new Response(new Uint8Array(await reportXlsx(table)), {
-    headers: { "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Content-Disposition": `attachment; filename="${name}.xlsx"`, "Cache-Control": "private, no-store" },
+    headers: {
+      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "Content-Disposition": `attachment; filename="${name}.xlsx"`,
+      "Cache-Control": "private, no-store",
+    },
   });
 }
