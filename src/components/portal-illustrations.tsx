@@ -22,12 +22,3 @@ export function PortalIllustration({ asset, className = "", eager = false }: {
     className={`portal-illustration portal-illustration-${asset} ${className}`}
   />;
 }
-
-export function IllustratedIntro({ asset, title, description }: {
-  asset: Illustration; title: string; description: string;
-}) {
-  return <div className="illustrated-intro">
-    <div><h2>{title}</h2><p>{description}</p></div>
-    <PortalIllustration asset={asset} eager />
-  </div>;
-}
