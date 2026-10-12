@@ -1,7 +1,9 @@
 "use client";
 
+import { BrandLoader } from "@/components/brand-loader";
+
 import { useActionState } from "react";
-import { ArrowRight, LoaderCircle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { login, type LoginState } from "./actions";
 
 export function LoginForm({ next }: { next: string }) {
@@ -15,8 +17,8 @@ export function LoginForm({ next }: { next: string }) {
       <input name="password" type="password" autoComplete="current-password" required />
     </label>
     {state.error && <p role="alert" className="form-error">{state.error}</p>}
-    <button type="submit" className="action" disabled={pending}>
-      {pending ? <LoaderCircle size={17} className="spin" /> : null}Sign in{!pending && <ArrowRight size={16} />}
+    <button type="submit" className="action" disabled={pending} aria-busy={pending}>
+      {pending ? <BrandLoader size="inline" /> : null}Sign in{!pending && <ArrowRight size={16} />}
     </button>
   </form>;
 }
