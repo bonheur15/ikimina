@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { setPasswordWithToken } from "@/lib/auth/accounts";
 
-export async function choosePassword(_state: { error?: string }, form: FormData) {
+export async function choosePassword(_state: { error?: string }, form: FormData): Promise<{ error?: string }> {
   const password = String(form.get("password") ?? "");
   if (password.length < 8) return { error: "Use at least 8 characters." };
   if (password.length > 200) return { error: "Use at most 200 characters." };
