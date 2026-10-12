@@ -7,6 +7,13 @@ import { loadSettings } from "@/lib/portal-server";
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const viewer = await requireAdmin();
   const settings = await loadSettings();
-  return <AccountProvider initialLanguage={(await cookies()).get("elayo-language")?.value === "rw" ? "rw" : "en"} viewer={{ name: viewer.name, role: viewer.role, memberCode: viewer.member?.code ?? null, email: viewer.email }}
-    {...settings}>{children}</AccountProvider>;
+  return (
+    <AccountProvider
+      initialLanguage={(await cookies()).get("elayo-language")?.value === "rw" ? "rw" : "en"}
+      viewer={{ name: viewer.name, role: viewer.role, memberCode: viewer.member?.code ?? null, email: viewer.email }}
+      {...settings}
+    >
+      {children}
+    </AccountProvider>
+  );
 }

@@ -11,10 +11,62 @@ export default async function GovernancePage() {
   const viewer = await requireAdmin();
   const supers = await db.$count(users, eq(users.role, "superadmin"));
   const superadmin = viewer.role === "superadmin";
-  const accounts = superadmin ? await db.select({ id: users.id, name: users.name, email: users.email, role: users.role, disabled: sql<boolean>`${users.disabledAt} is not null`, ready: sql<boolean>`${users.passwordHash} is not null` }).from(users).orderBy(users.name).limit(300)
-    : viewer.role === "secretary" ? await db.select({ id: users.id, name: users.name, email: users.email, role: users.role, disabled: sql<boolean>`${users.disabledAt} is not null`, ready: sql<boolean>`${users.passwordHash} is not null` }).from(users).where(and(eq(users.role, "superadmin"), isNull(users.passwordHash))).limit(1) : [];
+  const accounts = superadmin
+    ? await db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          role: users.role,
+          disabled: sql<boolean>`${users.disabledAt} is not null`,
+          ready: sql<boolean>`${users.passwordHash} is not null`,
+        })
+        .from(users)
+        .orderBy(users.name)
+        .limit(300)
+    : viewer.role === "secretary"
+      ? await db
+          .select({
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            role: users.role,
+            disabled: sql<boolean>`${users.disabledAt} is not null`,
+            ready: sql<boolean>`${users.passwordHash} is not null`,
+          })
+          .from(users)
+          .where(and(eq(users.role, "superadmin"), isNull(users.passwordHash)))
+          .limit(1)
+      : [];
   const config = superadmin ? await getPushConfig() : null;
-  const [queue] = superadmin ? await db.select({ pending: sql<number>`count(*) filter (where ${pushNotifications.sentAt} is null and ${pushNotifications.cancelledAt} is null)::int`, failed: sql<number>`count(*) filter (where ${pushNotifications.lastError} is not null and ${pushNotifications.cancelledAt} is null)::int` }).from(pushNotifications) : [{ pending: 0, failed: 0 }];
-  return <AccountDashboard role="admin"><GovernancePanel role={viewer.role} accounts={accounts} bootstrap={viewer.role === "secretary" && supers === 0} policy={superadmin ? await getLoanPolicy() : null}
-    notifications={config ? { appId: config.appId, siteUrl: config.siteUrl, hasKey: config.hasKey, configured: config.configured, policy: config.policy, ...queue } : null} /></AccountDashboard>;
+  const [queue] = superadmin
+    ? await db
+        .select({
+          pending: sql<number>`count(*) filter (where ${pushNotifications.sentAt} is null and ${pushNotifications.cancelledAt} is null)::int`,
+          failed: sql<number>`count(*) filter (where ${pushNotifications.lastError} is not null and ${pushNotifications.cancelledAt} is null)::int`,
+        })
+        .from(pushNotifications)
+    : [{ pending: 0, failed: 0 }];
+  return (
+    <AccountDashboard role="admin">
+      <GovernancePanel
+        role={viewer.role}
+        accounts={accounts}
+        bootstrap={viewer.role === "secretary" && supers === 0}
+        policy={superadmin ? await getLoanPolicy() : null}
+        notifications={
+          config
+            ? {
+                appId: config.appId,
+                siteUrl: config.siteUrl,
+                hasKey: config.hasKey,
+                configured: config.configured,
+                policy: config.policy,
+                ...queue,
+              }
+            : null
+        }
+      />
+    </AccountDashboard>
+  );
 }
