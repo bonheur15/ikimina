@@ -1,0 +1,2 @@
+ALTER TABLE "finance_requests" ADD COLUMN "processing_fee_source" text DEFAULT 'mobile_money' NOT NULL;--> statement-breakpoint
+ALTER TABLE "finance_requests" ADD COLUMN "processing_fee_deducted_amount" integer DEFAULT 0 NOT NULL;
