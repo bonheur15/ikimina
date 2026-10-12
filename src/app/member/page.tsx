@@ -1,2 +1,7 @@
 import { AccountDashboard } from "@/components/account-dashboard";
-export default function MemberPage() { return <AccountDashboard role="member" />; }
+import { requireViewer } from "@/lib/auth/viewer";
+
+export default async function MemberPage() {
+  await requireViewer();
+  return <AccountDashboard role="member" />;
+}
