@@ -10,14 +10,22 @@ import type { Member, MemberRecord } from "@/lib/portal-data";
 // Read-only lookups loaded on demand (dialogs, pickers), so pages never ship every record up front.
 // Administrators can read any member; members only their own records.
 
-export type RecordDetailData = { record: MemberRecord; member: { id: string; name: string }; balanceAfter: number | null };
+export type RecordDetailData = {
+  record: MemberRecord;
+  member: { id: string; name: string };
+  balanceAfter: number | null;
+};
 
 export async function getRecordDetail(reference: string): Promise<RecordDetailData | null> {
   const viewer = await getViewer();
   if (!viewer || typeof reference !== "string" || reference.length > 40) return null;
-  const [row] = (await db.execute(sql`select l.reference, l.kind, l.amount::float8 as amount, l.period, l.paid_at, l.method, l.note, l.source,
+  const [row] =
+    (await db.execute(sql`select l.reference, l.kind, l.amount::float8 as amount, l.period, l.paid_at, l.method, l.note, l.source,
       l.source_ref, l.member_id, l.created_at, m.code, m.first_name, m.surname
-    from ledger_entries l join members m on m.id = l.member_id where l.reference = ${reference} and l.voided_at is null`)) as unknown as Record<string, unknown>[];
+    from ledger_entries l join members m on m.id = l.member_id where l.reference = ${reference} and l.voided_at is null`)) as unknown as Record<
+      string,
+      unknown
+    >[];
   if (!row) return null;
   if (!canReadGroup(viewer.role) && viewer.member?.id !== row.member_id) return null;
   const record = rowToRecord(row);
@@ -27,7 +35,9 @@ export async function getRecordDetail(reference: string): Promise<RecordDetailDa
     const [{ balance }] = (await db.execute(sql`select coalesce(sum(amount), 0)::float8 as balance from ledger_entries
       where member_id = ${row.member_id as string} and voided_at is null and kind in ('savings', 'adjustment')
       and (coalesce(period, '9999'), coalesce(paid_at, 'epoch'::timestamptz), reference)
-        <= (coalesce(${record.period || null}, '9999'), coalesce(${row.paid_at as string | null}::timestamptz, 'epoch'::timestamptz), ${record.id})`)) as unknown as { balance: number }[];
+        <= (coalesce(${record.period || null}, '9999'), coalesce(${row.paid_at as string | null}::timestamptz, 'epoch'::timestamptz), ${record.id})`)) as unknown as {
+      balance: number;
+    }[];
     balanceAfter = Number(balance);
   }
   return { record, member: { id: record.memberId, name: record.memberName ?? record.memberId }, balanceAfter };
