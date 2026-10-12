@@ -1,0 +1,156 @@
+.contribution-register .segmented .register-tab-label {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
+.contribution-register .segmented button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+@media (max-width: 700px) {
+  .register-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  .register-stats .stat {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 28px;
+    align-content: start;
+    gap: 6px 8px;
+    padding: 16px;
+  }
+
+  .register-stats .stat:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .register-stats .stat > .stat-icon {
+    grid-column: 2;
+    grid-row: 1;
+    position: static;
+    width: 28px;
+    height: 28px;
+    margin: 0;
+    align-self: start;
+  }
+
+  .register-stats .stat-label {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    min-height: 28px;
+    padding: 0;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+
+  .register-stats .stat > strong {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 22px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .register-stats .stat:first-child > strong {
+    font-size: 28px;
+  }
+
+  .register-stats .stat > strong .money {
+    gap: 5px;
+  }
+
+  .register-stats .stat > strong .money small,
+  .register-stats .stat > strong > small {
+    font-size: 10px;
+    letter-spacing: 0;
+  }
+
+  .register-stats .stat-note {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .contribution-register {
+    padding: 16px;
+  }
+
+  .contribution-register .filter-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .contribution-register .search-input,
+  .contribution-register .filter-choice {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+  }
+
+  .contribution-register .search-input > svg {
+    flex-shrink: 0;
+  }
+
+  .contribution-register .filter-choice {
+    font-size: 14px;
+  }
+
+  .contribution-register .history-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .contribution-register .segmented {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .contribution-register .segmented button {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 7px;
+    min-width: 0;
+    min-height: 66px;
+    padding: 10px 4px;
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  .contribution-register .segmented button > svg {
+    flex-shrink: 0;
+  }
+
+  .contribution-register .segmented .register-tab-label {
+    overflow-wrap: anywhere;
+  }
+
+  .contribution-register .segmented .register-tab-count {
+    position: absolute;
+    top: 6px;
+    right: 4px;
+    font-size: 8px;
+  }
+
+  .contribution-register .download-pair {
+    justify-self: end;
+  }
+
+  .contribution-register .download-pair .action {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+}
