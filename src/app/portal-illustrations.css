@@ -1,46 +1,147 @@
-.portal-illustration { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
-.balance-art { width: 220px; }
-.balance-art > .portal-illustration { position: absolute; width: 235px; height: 235px; top: 2px; right: -8px; }
-.balance-art .art-label { top: auto; bottom: 19px; left: 52px; }
-.balance-art .art-star { opacity: .55; }
-.statement-illustration { width: 155px; height: 145px; margin: -11px 0 5px -15px; }
-.statement-controls-art { width: 148px; height: 148px; margin: -14px auto 10px; }
-.admin-pool > :not(.pool-illustration) { position: relative; z-index: 1; }
-.pool-illustration { position: absolute; width: 245px; height: 245px; right: 9px; top: 2px; pointer-events: none; }
+.portal-illustration {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+.balance-art {
+  width: 220px;
+}
+.balance-art > .portal-illustration {
+  position: absolute;
+  width: 235px;
+  height: 235px;
+  top: 2px;
+  right: -8px;
+}
+.balance-art .art-label {
+  top: auto;
+  bottom: 19px;
+  left: 52px;
+}
+.balance-art .art-star {
+  opacity: 0.55;
+}
+.statement-controls-art {
+  width: 148px;
+  height: 148px;
+  margin: -14px auto 10px;
+}
+.admin-pool > :not(.pool-illustration) {
+  position: relative;
+  z-index: 1;
+}
+.pool-illustration {
+  position: absolute;
+  width: 245px;
+  height: 245px;
+  right: 9px;
+  top: 2px;
+  pointer-events: none;
+}
 
 @media (max-width: 1220px) {
-  .balance-art { width: 165px; }
-  .balance-art > .portal-illustration { width: 185px; height: 185px; top: 26px; right: -8px; }
-  .balance-art .art-label { left: 28px; }
-  .pool-illustration { width: 195px; height: 195px; right: -1px; top: 42px; }
+  .balance-art {
+    width: 165px;
+  }
+  .balance-art > .portal-illustration {
+    width: 185px;
+    height: 185px;
+    top: 26px;
+    right: -8px;
+  }
+  .balance-art .art-label {
+    left: 28px;
+  }
+  .pool-illustration {
+    width: 195px;
+    height: 195px;
+    right: -1px;
+    top: 42px;
+  }
 }
 
 @media (max-width: 700px) {
-  .balance-card { min-height: 270px; }
-  .balance-art { width: 150px; right: -2px; }
-  .balance-art > .portal-illustration { width: 156px; height: 156px; top: auto; bottom: 6px; right: -7px; }
-  .balance-art .art-label, .balance-art .star-two { display: none; }
-  .balance-art .star-one { top: 147px; left: 25px; font-size: 15px; }
-  .balance-card-bottom { flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 23px; }
-  .balance-bottom-divider { display: none !important; }
-  .statement-illustration { float: right; width: 115px; height: 115px; margin: 8px -13px 2px 8px; }
-  .statement-feature h2 { max-width: 210px; }
-  .statement-feature p { max-width: 230px; }
-  .statement-controls-art { float: right; width: 74px; height: 74px; margin: -7px -6px 8px 10px; }
-  .statement-controls .section-heading { min-height: 62px; }
-  .statement-controls > .field { clear: both; }
-  .admin-pool { min-height: 262px; }
-  .pool-illustration { width: 150px; height: 150px; top: auto; bottom: 7px; right: -3px; }
-  .pool-details { flex-direction: column; align-items: flex-start; gap: 9px; margin-top: 30px; max-width: 170px; }
+  .balance-card {
+    min-height: 270px;
+  }
+  .balance-art {
+    width: 150px;
+    right: -2px;
+  }
+  .balance-art > .portal-illustration {
+    width: 156px;
+    height: 156px;
+    top: auto;
+    bottom: 6px;
+    right: -7px;
+  }
+  .balance-art .art-label,
+  .balance-art .star-two {
+    display: none;
+  }
+  .balance-art .star-one {
+    top: 147px;
+    left: 25px;
+    font-size: 15px;
+  }
+  .balance-card-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 23px;
+  }
+  .balance-bottom-divider {
+    display: none !important;
+  }
+  .statement-controls-art {
+    float: right;
+    width: 74px;
+    height: 74px;
+    margin: -7px -6px 8px 10px;
+  }
+  .statement-controls .section-heading {
+    min-height: 62px;
+  }
+  .statement-controls > .field {
+    clear: both;
+  }
+  .admin-pool {
+    min-height: 262px;
+  }
+  .pool-illustration {
+    width: 150px;
+    height: 150px;
+    top: auto;
+    bottom: 7px;
+    right: -3px;
+  }
+  .pool-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 9px;
+    margin-top: 30px;
+    max-width: 170px;
+  }
 }
 
 @media (max-width: 390px) {
-  .balance-art > .portal-illustration { width: 145px; height: 145px; right: -4px; bottom: 7px; }
-  .pool-illustration { width: 138px; height: 138px; }
-  .statement-illustration { width: 96px; height: 105px; }
-  .statement-feature h2 { max-width: 180px; }
+  .balance-art > .portal-illustration {
+    width: 145px;
+    height: 145px;
+    right: -4px;
+    bottom: 7px;
+  }
+  .pool-illustration {
+    width: 138px;
+    height: 138px;
+  }
 }
 
 @media print {
-  .portal-illustration { display: none; }
+  .portal-illustration {
+    display: none;
+  }
 }
