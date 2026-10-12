@@ -5,6 +5,8 @@ export const adminRoutes = {
   social: "/admin/social-fund",
   penalties: "/admin/penalties",
   cashbook: "/admin/cashbook",
+  mobileMoney: "/admin/mobile-money",
+  governance: "/admin/governance",
   reports: "/admin/reports",
   settings: "/admin/settings",
 } as const;
