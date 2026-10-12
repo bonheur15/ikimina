@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit --incremental false",
+    "test:penalties": "node --env-file=.env.local tests/run-penalties.mjs",
+    "test:payments": "node --conditions=react-server --import=tsx --test tests/xendly.test.ts tests/payment-fees.test.ts tests/loan-policy.test.ts",
+    "test:payments:integration": "node --env-file=.env.local tests/run-mobile-money.mjs",
     "db:up": "docker compose up -d db",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio"
@@ -42,6 +45,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }
