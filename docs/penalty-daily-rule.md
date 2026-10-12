@@ -39,6 +39,7 @@ The app queues deadline reminders for still-unpaid members, new penalty alerts, 
 5. Confirm a test subscription and notification in OneSignal. Until these variables are configured and real devices opt in, live delivery cannot be verified.
 
 Official references:
+
 - https://documentation.onesignal.com/docs/en/web-sdk-reference
 - https://documentation.onesignal.com/reference/push-notification
 - https://documentation.onesignal.com/docs/en/onesignal-service-worker
