@@ -8,7 +8,10 @@ export type MemberTotals = Record<RecordKind, number>;
 export type Member = {
   /** Member code, e.g. CEAD0001. */
   id: string;
-  name: string; initials: string; district: string; email: string; phone: string;
+  name: string;
+  /** Surname first, as in the Excel registers (used in sheets and reports). */
+  sheetName: string;
+  initials: string; district: string; email: string; phone: string;
   status: "active" | "former";
   /** Expected monthly savings in RWF; 0 when not set. */
   monthlySavings: number;
@@ -22,6 +25,10 @@ export type MemberRecord = {
   /** Reference, e.g. IMP-SAV-G4 or SAV-2610-7K3QX. */
   id: string;
   memberId: string;
+  /** Included when records from several members are listed together. */
+  memberName?: string;
+  /** Surname first, as in the Excel registers. */
+  memberSheetName?: string;
   type: RecordKind;
   amount: number;
   /** Payment date (YYYY-MM-DD, Kigali); empty when only the month is known. */
@@ -69,22 +76,21 @@ export const principalOf = (member: Member) => member.totals.savings + member.to
 export const chronological = (a: MemberRecord, b: MemberRecord) =>
   (a.period || "9999").localeCompare(b.period || "9999") || `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`) || a.id.localeCompare(b.id);
 
-export function runningBalance(records: MemberRecord[], record: MemberRecord) {
-  let balance = 0;
-  for (const item of records.filter(r => r.memberId === record.memberId).toSorted(chronological)) {
-    if (affectsSavings(item)) balance += item.amount;
-    if (item.id === record.id) return balance;
-  }
-  return balance;
+/** Net savings movement per contribution month; period "" holds undated adjustments. */
+export function monthlyNet(records: MemberRecord[]) {
+  const byPeriod = new Map<string, number>();
+  for (const r of records) if (affectsSavings(r)) byPeriod.set(r.period, (byPeriod.get(r.period) ?? 0) + r.amount);
+  return [...byPeriod].map(([period, amount]) => ({ period, amount })).sort((a, b) => a.period.localeCompare(b.period));
 }
 
-/** Savings balance at the end of each month in `periods` (YYYY-MM). */
-export function balanceSeries(records: MemberRecord[], periods: string[]) {
-  const sorted = records.filter(affectsSavings).toSorted(chronological);
+/** Savings balance at the end of each month in `periods` (YYYY-MM). Undated adjustments count from the last month. */
+export function balanceSeries(series: { period: string; amount: number }[], periods: string[]) {
+  const dated = series.filter(s => s.period).sort((a, b) => a.period.localeCompare(b.period));
+  const undated = series.filter(s => !s.period).reduce((sum, s) => sum + s.amount, 0);
   let i = 0, balance = 0;
-  return periods.map(period => {
-    while (i < sorted.length && sorted[i].period && sorted[i].period <= period) balance += sorted[i++].amount;
-    return balance;
+  return periods.map((period, index) => {
+    while (i < dated.length && dated[i].period <= period) balance += dated[i++].amount;
+    return balance + (index === periods.length - 1 ? undated : 0);
   });
 }
 
