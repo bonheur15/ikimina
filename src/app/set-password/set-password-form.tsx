@@ -1,5 +1,7 @@
 "use client";
 
+import { BrandLoader } from "@/components/brand-loader";
+
 import { useActionState } from "react";
 import { Check } from "lucide-react";
 import { choosePassword } from "./actions";
@@ -11,6 +13,6 @@ export function SetPasswordForm({ token }: { token: string }) {
     <label className="field">New password<input name="password" type="password" autoComplete="new-password" minLength={8} required autoFocus /></label>
     <label className="field">Confirm password<input name="confirm" type="password" autoComplete="new-password" minLength={8} required /></label>
     {state.error && <p role="alert" className="form-error">{state.error}</p>}
-    <button type="submit" className="action" disabled={pending}><Check size={16} />Save password</button>
+    <button type="submit" className="action" disabled={pending} aria-busy={pending}>{pending ? <BrandLoader size="inline" /> : <Check size={16} />}Save password</button>
   </form>;
 }
