@@ -2,6 +2,7 @@
 
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
+import { canReadGroup } from "@/lib/permissions";
 import { getViewer } from "@/lib/auth/viewer";
 import { loadMember, memberRecordsFor, recentRecords, rowToRecord, searchMembers } from "@/lib/admin-queries";
 import type { Member, MemberRecord } from "@/lib/portal-data";
@@ -18,7 +19,7 @@ export async function getRecordDetail(reference: string): Promise<RecordDetailDa
       l.source_ref, l.member_id, l.created_at, m.code, m.first_name, m.surname
     from ledger_entries l join members m on m.id = l.member_id where l.reference = ${reference} and l.voided_at is null`)) as unknown as Record<string, unknown>[];
   if (!row) return null;
-  if (viewer.role !== "admin" && viewer.member?.id !== row.member_id) return null;
+  if (!canReadGroup(viewer.role) && viewer.member?.id !== row.member_id) return null;
   const record = rowToRecord(row);
   let balanceAfter: number | null = null;
   if (record.type === "savings" || record.type === "adjustment") {
@@ -34,7 +35,7 @@ export async function getRecordDetail(reference: string): Promise<RecordDetailDa
 
 export async function getMemberDetail(code: string): Promise<{ member: Member; records: MemberRecord[] } | null> {
   const viewer = await getViewer();
-  if (viewer?.role !== "admin" || typeof code !== "string") return null;
+  if (!canReadGroup(viewer?.role) || typeof code !== "string") return null;
   const member = await loadMember(code);
   if (!member) return null;
   const [row] = (await db.execute(sql`select id from members where code = ${code}`)) as unknown as { id: string }[];
@@ -43,13 +44,13 @@ export async function getMemberDetail(code: string): Promise<{ member: Member; r
 
 export async function findMembers(q: string): Promise<Member[]> {
   const viewer = await getViewer();
-  if (viewer?.role !== "admin") return [];
+  if (!canReadGroup(viewer?.role)) return [];
   return searchMembers(String(q ?? "").slice(0, 80));
 }
 
 export async function recentActivity(): Promise<MemberRecord[]> {
   const viewer = await getViewer();
   if (!viewer) return [];
-  if (viewer.role === "admin") return recentRecords(5);
+  if (canReadGroup(viewer.role)) return recentRecords(5);
   return viewer.member ? recentRecords(5, viewer.member.id) : [];
 }
