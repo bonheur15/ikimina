@@ -9,6 +9,7 @@ import { cellAddress, columnIndex, type SheetCell, type SheetSnapshot, type Work
 //  - "TOOLS FOR SAVINGS FOR SOFTWARE.xlsx": monthly savings / social / penalty registers,
 //    interest allocations, embedded adjustments and the petty-cash book.
 //  - "Account_creation_Member_Email_Collection.xlsx": the current member roster and emails.
+// Both are uploaded under Workbooks first; an administrator then runs the import from there.
 // Monthly registers become one ledger entry per non-zero month cell, linked back to its cell.
 // Workbook totals are not imported; differences between them and the entries are reported.
 
@@ -35,8 +36,6 @@ const numberOf = (cell: SheetCell | undefined) => {
   const parsed = Number(String(cell.v).replace(/[,\s]/g, ""));
   return Number.isFinite(parsed) ? parsed : null;
 };
-const titleCase = (value: string | null) => value && value === value.toUpperCase() && /[A-Z]/.test(value)
-  ? value.toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (_m, p: string, c: string) => p + c.toUpperCase()) : value;
 
 function sheet(book: WorkbookSnapshot, name: string) {
   const found = book.sheets.find(s => s.name.trim().toLowerCase() === name.toLowerCase());
@@ -237,6 +236,7 @@ export function buildImport(savingsBook: WorkbookSnapshot, rosterBook: WorkbookS
   const cash = sheet(savingsBook, "Cashbook");
   const cashRows: DraftCash[] = [];
   let lastYear: number | null = null;
+  let yearless = 0;
   const rowOf = (c: DraftCash) => Number(c.sourceRef.replace(/\D/g, ""));
   for (let r = 2; r <= cash.rowCount; r++) {
     const description = clean(cell(cash, r, "B")?.v);
@@ -244,6 +244,20 @@ export function buildImport(savingsBook: WorkbookSnapshot, rosterBook: WorkbookS
     const moneyOut = numberOf(cell(cash, r, "D")) ?? 0;
     if (!description && !moneyIn && !moneyOut) continue;
     const date = parseCashDate(cell(cash, r, "A"), lastYear);
+    if (date.inferred) yearless++;
+    // Dates typed as day/month can be stored by Excel as month/day (e.g. 4/6/2026 → 6 April).
+    // Swap them only when the swapped date fits the surrounding entries much better.
+    const lastDate = cashRows.findLast(c => c.entryDate)?.entryDate;
+    if (date.date && lastDate && typeof cell(cash, r, "A")?.v === "number") {
+      const [y, m, d] = date.date.split("-");
+      const swapped = `${y}-${d}-${m}`;
+      const gap = (iso: string) => Math.abs(Date.parse(iso) - Date.parse(lastDate));
+      if (Number(d) <= 12 && d !== m && swapped >= lastDate && date.date < lastDate && gap(swapped) < gap(date.date)) {
+        findings.push({ sheet: "Cashbook", ref: `Cashbook!A${r}`, message: `Date stored as ${date.date} reads as ${swapped} (day and month swapped), which fits the entries around it; ${swapped} was used.` });
+        date.date = swapped;
+        date.inferred = true;
+      }
+    }
     if (date.date) lastYear = Number(date.date.slice(0, 4));
     const balance = cell(cash, r, "E");
     const sourceBalance = numberOf(balance);
@@ -256,7 +270,7 @@ export function buildImport(savingsBook: WorkbookSnapshot, rosterBook: WorkbookS
       description: description ?? "(no description)", moneyIn, moneyOut, sourceBalance, comment: cash.comments[`${r}:2`] ?? null, sourceRef: `Cashbook!A${r}`,
     });
   }
-  const undated = cashRows.filter(c => !c.entryDate).length, inferred = cashRows.filter(c => c.dateInferred).length;
+  const undated = cashRows.filter(c => !c.entryDate).length, inferred = yearless;
   if (undated) findings.push({ sheet: "Cashbook", message: `${undated} cashbook rows have no readable date; they keep their original position.` });
   if (inferred) findings.push({ sheet: "Cashbook", message: `${inferred} cashbook dates were written without a year; the year was taken from the previous entry.` });
   const commented = cashRows.filter(c => c.comment).length;
@@ -293,11 +307,15 @@ export async function storeWorkbook(db: Db, file: SourceFile, snapshot: Workbook
   });
 }
 
-export async function importSourceWorkbooks(db: Db, savingsFile: SourceFile, rosterFile: SourceFile) {
-  const [savingsBook, rosterBook] = await Promise.all([parseWorkbook(savingsFile.data), parseWorkbook(rosterFile.data)]);
+/** Imports records from two workbooks already stored in the app (see storeWorkbook). */
+export async function importStoredWorkbooks(db: Db, savingsId: string, rosterId: string) {
+  const files = await db.select({ id: workbooks.id, file: workbooks.file }).from(workbooks).where(inArray(workbooks.id, [savingsId, rosterId]));
+  const fileOf = (id: string) => files.find(f => f.id === id)?.file;
+  const savingsData = fileOf(savingsId), rosterData = fileOf(rosterId);
+  if (!savingsData || !rosterData) throw new Error("Workbook not found.");
+  const [savingsBook, rosterBook] = await Promise.all([parseWorkbook(savingsData), parseWorkbook(rosterData)]);
+  // Throws with the missing sheet's name when the wrong workbooks are chosen.
   const draft = buildImport(savingsBook, rosterBook);
-  const savingsId = await storeWorkbook(db, savingsFile, savingsBook);
-  const rosterId = await storeWorkbook(db, rosterFile, rosterBook);
 
   return db.transaction(async tx => {
     // Existing members keep any details edited in the app; imports only fill gaps.
@@ -336,10 +354,6 @@ export async function importSourceWorkbooks(db: Db, savingsFile: SourceFile, ros
     for (const e of draft.entries) counts[e.kind] = (counts[e.kind] ?? 0) + 1;
     const summary: ImportSummary = { counts, findings: draft.findings };
     await tx.insert(importRuns).values({ workbookId: savingsId, summary });
-    return { savingsId, rosterId, summary };
+    return { summary };
   });
-}
-
-export async function latestImport(db: Db) {
-  return db.query.importRuns.findFirst({ orderBy: (t, { desc }) => [desc(t.createdAt)] });
 }
