@@ -8,6 +8,14 @@ import { oneOf, pageParam, param } from "@/lib/search-params";
 export default async function MembersPage({ searchParams }: PageProps<"/admin/members">) {
   await requireAdmin();
   const params = await searchParams;
-  const data = await loadMembersPage(oneOf(params, "filter", MEMBER_FILTERS, "all"), param(params, "q"), pageParam(params));
-  return <AccountDashboard role="admin"><AdminMembers data={data} /></AccountDashboard>;
+  const data = await loadMembersPage(
+    oneOf(params, "filter", MEMBER_FILTERS, "all"),
+    param(params, "q"),
+    pageParam(params),
+  );
+  return (
+    <AccountDashboard role="admin">
+      <AdminMembers data={data} />
+    </AccountDashboard>
+  );
 }

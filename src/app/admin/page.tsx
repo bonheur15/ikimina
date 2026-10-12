@@ -5,5 +5,9 @@ import { loadOverview } from "@/lib/admin-queries";
 
 export default async function AdminPage() {
   await requireAdmin();
-  return <AccountDashboard role="admin"><AdminOverview data={await loadOverview()} /></AccountDashboard>;
+  return (
+    <AccountDashboard role="admin">
+      <AdminOverview data={await loadOverview()} />
+    </AccountDashboard>
+  );
 }

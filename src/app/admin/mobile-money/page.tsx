@@ -6,5 +6,9 @@ import { paymentConfig } from "@/lib/xendly";
 
 export default async function MobileMoneyPage() {
   await requireAdmin();
-  return <AccountDashboard role="admin"><AdminMobileMoney data={await loadFinance()} config={paymentConfig()} /></AccountDashboard>;
+  return (
+    <AccountDashboard role="admin">
+      <AdminMobileMoney data={await loadFinance()} config={paymentConfig()} />
+    </AccountDashboard>
+  );
 }
