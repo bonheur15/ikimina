@@ -1,0 +1,54 @@
+/* Member account cards share the same scale as the contribution panels. */
+.member-home-columns { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 22px; align-items: stretch; }
+.member-home-columns > div { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+/* The last card in each column stretches so both columns end level. */
+.member-home-columns > div > :last-child { flex-grow: 1; }
+.member-card-heading { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.member-card-heading h2 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -.3px; line-height: 1.5; }
+.member-card-icon { display: grid; place-items: center; flex: 0 0 38px; width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 10px; color: var(--blue); background: #fff; }
+.member-statement-card { display: flex; flex-direction: column; gap: 18px; }
+.member-statement-card > p { color: var(--muted); font-size: 12px; line-height: 1.7; max-width: 42ch; }
+.member-statement-card ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.member-statement-card li { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+.member-statement-card li svg { flex-shrink: 0; color: var(--blue); }
+.member-statement-card > .action { align-self: flex-start; margin-top: auto; }
+.member-savings-window { display: grid; gap: 16px; margin-bottom: 22px; }
+.member-home-columns .member-savings-window { margin-bottom: 0; }
+.savings-window-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.savings-window-status { font-size: 10px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.savings-window-dates { display: grid; gap: 5px; }
+.savings-window-dates > span { font-size: 11px; color: var(--muted); }
+.savings-window-dates strong { font-size: 15px; font-weight: 600; line-height: 1.6; }
+.savings-window-rule { max-width: 68ch; font-size: 12px; line-height: 1.7; color: var(--muted); }
+.savings-window-details { font-size: 12px; line-height: 1.7; }
+.savings-window-details summary { display: flex; align-items: center; gap: 7px; width: fit-content; min-height: 32px; color: var(--blue); cursor: pointer; list-style: none; border-radius: 4px; }
+.savings-window-details summary::-webkit-details-marker { display: none; }
+.savings-window-details summary svg { transition: transform .15s; }
+.savings-window-details[open] summary svg { transform: rotate(180deg); }
+.savings-window-details > div { display: grid; gap: 8px; color: var(--muted); padding: 10px 0 2px; max-width: 68ch; }
+.savings-window-controls { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line); }
+.savings-window-controls .field { width: 170px; max-width: 100%; flex: 0 1 170px; }
+.savings-window-controls > .action { flex-shrink: 0; }
+.member-savings-window > .portal-form { padding-top: 16px; border-top: 1px solid var(--line); max-width: 560px; }
+.member-savings-window > .delay-status { max-width: 68ch; }
+@media (max-width: 1220px) {
+  .member-home-columns { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 17px; }
+  .member-home-columns > div { gap: 17px; }
+}
+@media (max-width: 700px) {
+  /* One column: unwrap the stacks and restore the reading order. */
+  .member-home-columns { display: flex; flex-direction: column; gap: 18px; }
+  .member-home-columns > div { display: contents; }
+  .member-home-columns .growth-panel { order: 1; }
+  .member-home-columns .contribution-card { order: 2; }
+  .member-home-columns .breakdown-panel { order: 3; }
+  .member-home-columns .member-savings-window { order: 4; }
+  .member-home-columns .member-recent-card { order: 5; }
+  .member-home-columns .member-statement-card { order: 6; }
+  .member-statement-card { gap: 16px; }
+  .savings-window-controls .field { flex-grow: 1; }
+  .savings-window-controls > .action { flex: 1 0 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .action, .savings-window-details summary svg { transition: none; }
+}
