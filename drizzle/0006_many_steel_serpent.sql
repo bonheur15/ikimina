@@ -1,0 +1,2 @@
+ALTER TABLE "finance_requests" ADD COLUMN "processing_fee_amount" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE "finance_requests" ADD COLUMN "processing_fee_paid_at" timestamp with time zone;
