@@ -8,5 +8,16 @@ import { DEMO_ACCOUNTS, demoEnabled } from "@/lib/demo";
 export async function demoSignIn(role: "admin" | "member" | "superadmin" | "manager") {
   if (!demoEnabled()) notFound();
   const account = DEMO_ACCOUNTS[role];
-  await signIn("credentials", { identifier: account.email, password: account.password, redirectTo: role === "member" ? "/member" : role === "superadmin" ? "/admin/governance" : role === "manager" ? "/admin/mobile-money" : "/admin" });
+  await signIn("credentials", {
+    identifier: account.email,
+    password: account.password,
+    redirectTo:
+      role === "member"
+        ? "/member"
+        : role === "superadmin"
+          ? "/admin/governance"
+          : role === "manager"
+            ? "/admin/mobile-money"
+            : "/admin",
+  });
 }
