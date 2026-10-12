@@ -1,5 +1,5 @@
-import { AccountDashboard } from "@/components/account-dashboard";
+import { RegisterPage } from "@/components/register-page";
 
-export default function Page() {
-  return <AccountDashboard role="admin" />;
+export default function ContributionsPage({ searchParams }: PageProps<"/admin/contributions">) {
+  return <RegisterPage kind="savings" searchParams={searchParams} />;
 }
