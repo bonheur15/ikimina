@@ -1,0 +1,1 @@
+ALTER TABLE "push_notifications" ADD COLUMN "cancelled_at" timestamp with time zone;
