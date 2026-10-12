@@ -1,8 +1,8 @@
 import "server-only";
 import { asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { cashbookEntries, ledgerEntries, members, settings, users, type LedgerRow } from "@/db/schema";
-import { SOCIAL_MONTHLY, kigaliTime, kigaliToday, type AccountState, type CashEntry, type Member, type MemberRecord, type MemberTotals, type RecordKind } from "./portal-data";
+import { ledgerEntries, members, settings, users, type LedgerRow } from "@/db/schema";
+import { SOCIAL_MONTHLY, kigaliTime, kigaliToday, type AccountState, type Member, type MemberRecord, type MemberTotals, type RecordKind } from "./portal-data";
 
 const COLORS = ["mint", "blue", "violet", "peach"];
 const titleCase = (value: string) => value === value.toUpperCase() && /[A-Z]/.test(value)
@@ -30,7 +30,7 @@ export async function loadPeople(onlyMemberId?: string): Promise<Member[]> {
     const name = [m.firstName, m.surname].filter(Boolean).map(part => titleCase(part!)).join(" ");
     const totals = byMember.get(m.id) ?? { savings: 0, social: 0, penalty: 0, interest: 0, adjustment: 0 };
     return {
-      id: m.code, name, initials: name.split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase(),
+      id: m.code, name, sheetName: [m.surname, m.firstName].filter(Boolean).map(part => titleCase(part!)).join(" "), initials: name.split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase(),
       district: m.district ?? "", email: m.email ?? "", phone: m.phone ?? "", status: m.status,
       monthlySavings: m.monthlyCommitment ?? 0, interest: totals.interest, totals,
       account: accountOf.get(m.id) ?? "none", color: COLORS[i % COLORS.length],
@@ -53,19 +53,6 @@ export async function loadRecords(memberId?: string): Promise<MemberRecord[]> {
     .where(sql`${ledgerEntries.voidedAt} is null${memberId ? sql` and ${ledgerEntries.memberId} = ${memberId}` : sql``}`)
     .orderBy(sql`${ledgerEntries.period} desc nulls first`, desc(ledgerEntries.paidAt), desc(ledgerEntries.createdAt), desc(ledgerEntries.reference));
   return rows.map(r => toRecord(r, r.code));
-}
-
-export async function loadCashbook(): Promise<CashEntry[]> {
-  const rows = await db.select().from(cashbookEntries).where(isNull(cashbookEntries.voidedAt)).orderBy(asc(cashbookEntries.position));
-  let balance = 0;
-  return rows.map(r => {
-    balance += r.moneyIn - r.moneyOut;
-    return {
-      id: r.id, position: r.position, date: r.entryDate ?? "", dateText: r.dateText ?? "", dateInferred: r.dateInferred,
-      description: r.description, moneyIn: r.moneyIn, moneyOut: r.moneyOut, balance, sourceBalance: r.sourceBalance,
-      category: r.category ?? "", comment: r.comment ?? "", source: r.source,
-    };
-  });
 }
 
 export async function loadSettings() {
