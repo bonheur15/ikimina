@@ -11,7 +11,12 @@ export default async function SetupPage() {
   // Always check the database at request time, never at build time.
   await connection();
   if (!(await needsSetup())) redirect("/login");
-  return <AuthShell title="Set up your workspace" subtitle="Create the first administrator account. This page closes as soon as it exists.">
-    <SetupForm needsCode={!!process.env.SETUP_TOKEN} />
-  </AuthShell>;
+  return (
+    <AuthShell
+      title="Set up your workspace"
+      subtitle="Create the first superadmin account. This page closes as soon as it exists."
+    >
+      <SetupForm needsCode={!!process.env.SETUP_TOKEN} />
+    </AuthShell>
+  );
 }
