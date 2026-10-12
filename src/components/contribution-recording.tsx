@@ -1,29 +1,38 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
-import { ArrowRight, Check, Coins, Plus, Search, Users } from "lucide-react";
-import { CURRENT_PERIOD, SHARE_VALUE, money, type ContributionKind, type Member, type MemberRecord } from "@/lib/portal-data";
-import { Action, Avatar, useT } from "./portal-ui";
+import { BrandLoader } from "@/components/brand-loader";
 
-function MemberPicker({ people, value, onChange }: {
-  people: Member[]; value: string; onChange: (id: string) => void;
-}) {
+import { useEffect, useId, useRef, useState, useTransition } from "react";
+import { ArrowRight, Check, Coins, Plus, Search, Users } from "lucide-react";
+import { SHARE_VALUE, SOCIAL_MONTHLY, currentPeriod, kigaliTime, kigaliToday, money, type ContributionKind, type Member, type MemberRecord } from "@/lib/portal-data";
+import { recordContribution } from "@/app/actions/portal";
+import { findMembers } from "@/app/actions/lookup";
+import { Action, MemberCode, useSharesLabel, useT } from "./portal-ui";
+import { Choice } from "./ui/choice";
+import { DateField, MonthField, TimeField } from "./ui/date-field";
+
+/** Finds members on the server as you type (only matching members are loaded). */
+function MemberPicker({ selected, onChange }: { selected: Member | null; onChange: (member: Member | null) => void }) {
   const t = useT();
   const [query, setQuery] = useState("");
+  const [matching, setMatching] = useState<Member[] | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const id = useId();
-  const selected = people.find(member => member.id === value);
-  const matching = people.filter(member =>
-    `${member.name} ${member.id} ${member.district} ${member.email}`.toLowerCase().includes(query.trim().toLowerCase()));
+  useEffect(() => {
+    if (selected) return;
+    let active = true;
+    const timer = setTimeout(() => findMembers(query.trim()).then(found => { if (active) setMatching(found); }), query ? 250 : 0);
+    return () => { active = false; clearTimeout(timer); };
+  }, [query, selected]);
 
   return <fieldset className="member-picker">
     <legend>{t("Member", "Umunyamuryango")}</legend>
     {selected ? <div className="member-picker-selected">
       <input className="sr-only" type="radio" name="member" value={selected.id} checked required readOnly tabIndex={-1} aria-label={selected.name} />
-      <Avatar member={selected} small />
-      <span><strong>{selected.name}</strong><small>{selected.id} · {selected.district}</small></span>
+      <MemberCode code={selected.id} />
+      <span><strong>{selected.name}</strong><small>{selected.district || selected.email || "—"}</small></span>
       <button type="button" onClick={() => {
-        onChange(""); setQuery("");
+        onChange(null); setQuery("");
         requestAnimationFrame(() => searchRef.current?.focus());
       }}>{t("Change", "Hindura")}</button>
     </div> : <>
@@ -34,30 +43,38 @@ function MemberPicker({ people, value, onChange }: {
         value={query} onChange={e => setQuery(e.target.value)}
       /></label>
       <div className="member-picker-options" aria-label={t("Matching members", "Abanyamuryango babonetse")}>
-        {matching.map(member => <label key={member.id} className="member-picker-option">
-          <input type="radio" name="member" value={member.id} checked={value === member.id} required onChange={() => onChange(member.id)} />
-          <Avatar member={member} small />
-          <span><strong>{member.name}</strong><small>{member.id} · {member.district}</small></span>
+        {matching === null ? <p className="member-picker-empty"><BrandLoader size="small" label={t("Loading…", "Tegereza gato…")} /></p> : matching.map(member => <label key={member.id} className="member-picker-option">
+          <input type="radio" name="member" value={member.id} checked={false} required onChange={() => onChange(member)} />
+          <MemberCode code={member.id} />
+          <span><strong>{member.name}</strong><small>{member.district || member.email || "—"}</small></span>
         </label>)}
-        {!matching.length && <p className="member-picker-empty" role="status"><Users size={19} />{t("No members found. Try another name or code.", "Nta munyamuryango wabonetse. Hindura izina cyangwa inomero.")}</p>}
+        {matching?.length === 0 && <p className="member-picker-empty" role="status"><Users size={19} />{t("No members found. Try another name or code.", "Nta munyamuryango wabonetse. Hindura izina cyangwa inomero.")}</p>}
       </div>
-      <span className="member-picker-hint">{matching.length} {t("members · Select the person you’re recording for", "abanyamuryango · Hitamo uwo wandikira")}</span>
+      <span className="member-picker-hint">{query ? t("Best matches · Select the person you’re recording for", "Abahuye cyane · Hitamo uwo wandikira") : t("Type a name or member code · Select the person you’re recording for", "Andika izina cyangwa inomero · Hitamo uwo wandikira")}</span>
     </>}
   </fieldset>;
 }
 
-export function ContributionRecordingForm({ kind, initialMemberId = "", people, onSave, onClose }: {
-  kind: ContributionKind; initialMemberId?: string; people: Member[]; onSave: (record: MemberRecord) => void; onClose: () => void;
+export function ContributionRecordingForm({ kind, initialMemberId = "", socialMonthly = SOCIAL_MONTHLY, onSaved, onClose }: {
+  kind: ContributionKind; initialMemberId?: string; socialMonthly?: number; onSaved: () => void; onClose: () => void;
 }) {
   const t = useT();
-  const [memberId, setMemberId] = useState(initialMemberId);
+  const sharesLabel = useSharesLabel();
+  const [selected, setSelected] = useState<Member | null>(null);
+  const memberId = selected?.id ?? "";
+  // Opened for a specific member (e.g. from a register row): look them up once.
+  useEffect(() => {
+    if (!initialMemberId) return;
+    findMembers(initialMemberId).then(found => setSelected(found.find(m => m.id === initialMemberId) ?? null));
+  }, [initialMemberId]);
   const formRef = useRef<HTMLFormElement>(null);
   const [shares, setShares] = useState("");
-  const [amount, setAmount] = useState(kind === "social" ? "5000" : "");
+  const [amount, setAmount] = useState(kind === "social" ? String(socialMonthly) : "");
+  const [pending, start] = useTransition();
+  const today = kigaliToday();
   const [saved, setSaved] = useState<MemberRecord | null>(null);
   const [error, setError] = useState("");
   const saving = kind === "savings";
-  const selected = people.find(member => member.id === memberId);
   const shareCount = Number(shares);
   const calculated = Number.isFinite(shareCount) && shareCount > 0 ? shareCount * SHARE_VALUE : 0;
   useEffect(() => {
@@ -67,13 +84,14 @@ export function ContributionRecordingForm({ kind, initialMemberId = "", people, 
   }, [memberId, saving]);
 
   if (saved) return <div className="record-success">
-    <span><Check size={32} /></span><h3>{t("Added to your preview", "Byongewe mu cyitegererezo")}</h3>
-    <strong>{saving ? `${money(saved.shares ?? 0)} ${t("shares", "imigabane")}` : `${money(saved.amount)} RWF`}</strong>
+    <span><Check size={32} /></span><h3>{t("Contribution recorded", "Umusanzu wanditswe")}</h3>
+    <strong>{saving ? sharesLabel(saved.amount / SHARE_VALUE) : `${money(saved.amount)} RWF`}</strong>
     {saving && <p>{money(saved.amount)} RWF · {money(SHARE_VALUE)} RWF {t("per share", "ku mugabane")}</p>}
-    <p>{people.find(member => member.id === saved.memberId)?.name}</p>
-    <p className="muted">{t("This record now appears in its register, the member’s account and reports. Refresh resets preview changes.", "Iyi nyandiko iri mu gitabo cyayo, muri konti y’umunyamuryango no muri raporo. Gusubiramo urupapuro bisubiza amakuru ya mbere.")}</p>
+    <p>{selected?.name}</p>
+    <p className="mono">{saved.id}</p>
+    <p className="muted">{t("It now appears in its register, the member’s account and reports.", "Iyi nyandiko iri mu gitabo cyayo, muri konti y’umunyamuryango no muri raporo.")}</p>
     <div className="record-success-actions"><Action secondary onClick={() => {
-      setSaved(null); setMemberId(""); setShares(""); setAmount(kind === "social" ? "5000" : ""); setError("");
+      setSaved(null); setSelected(null); setShares(""); setAmount(kind === "social" ? String(socialMonthly) : ""); setError("");
     }}><Plus size={16} />{t("Record another", "Andika undi")}</Action><Action onClick={onClose}>{t("Done", "Birarangiye")}<ArrowRight size={16} /></Action></div>
   </div>;
 
@@ -90,28 +108,30 @@ export function ContributionRecordingForm({ kind, initialMemberId = "", people, 
     const form = new FormData(event.currentTarget);
     const note = String(form.get("note") || "").trim();
     if (kind === "penalty" && !note) { setError(t("Enter the penalty reason or reference.", "Andika impamvu y’amande cyangwa inomero.")); return; }
-    const item: MemberRecord = {
-      id: `RC-${crypto.randomUUID().slice(0, 8).toUpperCase()}`, memberId, type: kind,
-      amount: Math.round(paid * 100) / 100, ...(saving ? { shares: shareCount } : {}),
-      date: String(form.get("date")), time: String(form.get("time")), period: String(form.get("period")),
-      method: String(form.get("method")), note: note || (saving ? "Savings shares contribution" : "Social fund contribution"),
-    };
-    onSave(item); setSaved(item);
+    start(async () => {
+      const result = await recordContribution({
+        memberId, kind, ...(saving ? { shares: shareCount } : { amount: paid }),
+        period: String(form.get("period")), date: String(form.get("date")), time: String(form.get("time")),
+        method: String(form.get("method")) as "Cash", note,
+      });
+      if (!result.ok) { setError(result.error); return; }
+      setSaved(result.record); onSaved();
+    });
   }}>
-    <MemberPicker people={people} value={memberId} onChange={id => {
-      setMemberId(id); setError("");
+    <MemberPicker selected={selected} onChange={member => {
+      setSelected(member); setError("");
     }} />
     {saving ? <div className="share-entry">
       <label className="field">{t("Number of shares", "Umubare w’imigabane")}<input name="shares" type="number" inputMode="numeric" min="1" max="20000" step="1" placeholder="10" value={shares} onChange={event => { setShares(event.target.value); setError(""); }} required /></label>
       <div className="share-shortcuts" aria-label={t("Quick share amounts", "Imibare y’imigabane yihuse")}>{[1, 5, 10, 20].map(count => <button type="button" key={count} aria-pressed={shares === String(count)} onClick={() => { setShares(String(count)); setError(""); }}>{count} {count === 1 ? t("share", "umugabane") : t("shares", "imigabane")}</button>)}</div>
       <div className="share-calculation"><Coins size={22} /><div><span>{t("Calculated contribution", "Agaciro k’umusanzu")}</span><output aria-live="polite">{money(calculated)} <small>RWF</small></output><p>{t("1 share", "Umugabane 1")} = {money(SHARE_VALUE)} RWF</p></div></div>
-      {selected && <p className="share-commitment">{t("Monthly savings commitment", "Umusanzu w’ubwizigame wa buri kwezi")}: <strong>{money(selected.monthlySavings / SHARE_VALUE)} {t("shares", "imigabane")}</strong></p>}
-    </div> : <label className="field">{t("Amount (RWF)", "Amafaranga (RWF)")}<input name="amount" type="number" inputMode="decimal" min="0.01" max="100000000" step="0.01" placeholder="5,000" value={amount} onChange={event => { setAmount(event.target.value); setError(""); }} required /></label>}
-    <label className="field">{t("Contribution month", "Ukwezi k’umusanzu")}<input name="period" type="month" defaultValue={CURRENT_PERIOD} min="2026-01" max="2026-12" required /></label>
-    <div className="form-grid"><label className="field">{t("Payment date", "Itariki y’ubwishyu")}<input name="date" type="date" defaultValue="2026-10-08" min="2026-01-01" max="2026-10-08" required /></label><label className="field">{t("Time (Kigali)", "Isaha (Kigali)")}<input name="time" type="time" defaultValue="12:00" required /></label></div>
-    <label className="field">{t("Payment method", "Uburyo bwo kwishyura")}<select name="method"><option>Mobile Money</option><option>Bank transfer</option><option>Cash</option></select></label>
+      {selected && <p className="share-commitment">{t("Monthly savings commitment", "Umusanzu w’ubwizigame wa buri kwezi")}: <strong>{sharesLabel(selected.monthlySavings / SHARE_VALUE)}</strong></p>}
+    </div> : <label className="field">{t("Amount (RWF)", "Amafaranga (RWF)")}<input name="amount" type="number" inputMode="decimal" min="0.01" max="100000000" step="0.01" placeholder="1,000" value={amount} onChange={event => { setAmount(event.target.value); setError(""); }} required /></label>}
+    <div className="field">{t("Contribution month", "Ukwezi k’umusanzu")}<MonthField name="period" defaultValue={currentPeriod()} min="2019-01" ariaLabel={t("Contribution month", "Ukwezi k’umusanzu")} /></div>
+    <div className="form-grid"><div className="field">{t("Payment date", "Itariki y’ubwishyu")}<DateField name="date" defaultValue={today} min="2019-01-01" max={today} required ariaLabel={t("Payment date", "Itariki y’ubwishyu")} /></div><div className="field">{t("Time (Kigali)", "Isaha (Kigali)")}<TimeField name="time" defaultValue={kigaliTime()} ariaLabel={t("Time (Kigali)", "Isaha (Kigali)")} /></div></div>
+    <div className="field">{t("Payment method", "Uburyo bwo kwishyura")}<Choice name="method" defaultValue="Mobile Money" ariaLabel={t("Payment method", "Uburyo bwo kwishyura")} options={["Mobile Money", "Bank transfer", "Cash"].map(m => ({ value: m, label: m }))} /></div>
     <label className="field">{kind === "penalty" ? t("Penalty reason or reference", "Impamvu y’amande cyangwa inomero") : t("Reference or note", "Inomero cyangwa ibisobanuro")}<input name="note" maxLength={200} required={kind === "penalty"} placeholder={kind === "penalty" ? t("For example, a late meeting penalty", "Urugero: amande yo gukererwa inama") : t("Optional payment reference", "Inomero y’ubwishyu (si ngombwa)")} /></label>
     {error && <p role="alert" className="form-error">{error}</p>}
-    <Action type="submit"><Plus size={16} />{saving ? t("Record shares", "Andika imigabane") : kind === "social" ? t("Record social contribution", "Andika umusanzu w’ingoboka") : t("Record penalty payment", "Andika ubwishyu bw’amande")}</Action>
+    <Action type="submit" busy={pending}><Plus size={16} />{saving ? t("Record shares", "Andika imigabane") : kind === "social" ? t("Record social contribution", "Andika umusanzu w’ingoboka") : t("Record penalty payment", "Andika ubwishyu bw’amande")}</Action>
   </form>;
 }
