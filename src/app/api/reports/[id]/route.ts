@@ -1,3 +1,4 @@
+import { canReadGroup } from "@/lib/permissions";
 import { cookies } from "next/headers";
 import { getViewer } from "@/lib/auth/viewer";
 import { buildReport, reportCsv, reportXlsx } from "@/lib/reports";
@@ -5,7 +6,7 @@ import { buildReport, reportCsv, reportXlsx } from "@/lib/reports";
 /** Downloads a report as Excel (.xlsx) or CSV, with every row matching its filters. Read-only. */
 export async function GET(request: Request, ctx: RouteContext<"/api/reports/[id]">) {
   const viewer = await getViewer();
-  if (viewer?.role !== "admin") return new Response("Not allowed", { status: 403 });
+  if (!canReadGroup(viewer?.role)) return new Response("Not allowed", { status: 403 });
   const { id } = await ctx.params;
   const url = new URL(request.url);
   const params = Object.fromEntries([...url.searchParams].map(([k, v]) => [k, v.slice(0, 100)]));
