@@ -11,6 +11,17 @@
 }
 
 body { background: #fafbfe; }
+.pwa-install-prompt { position: fixed; z-index: 45; inset: auto 16px calc(16px + env(safe-area-inset-bottom)) auto; width: min(380px, calc(100% - 32px)); display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 12px; padding: 20px; border: 1px solid #e4ecf7; border-radius: 20px; background: #fff; box-shadow: 0 12px 48px #0b254526; }
+.pwa-install-icon { width: 48px; height: 48px; border-radius: 12px; }
+.pwa-install-copy { min-width: 0; padding-right: 20px; }
+.pwa-install-prompt strong { font-size: 14px; font-weight: 600; line-height: 1.5; }
+.pwa-install-prompt p { font-size: 12px; line-height: 1.6; color: #647890; margin-top: 4px; }
+.pwa-install-action { grid-column: 1 / -1; width: 100%; min-height: 48px; }
+.pwa-install-guidance { grid-column: 1 / -1; }
+.pwa-install-prompt > .icon-button { position: absolute; top: 4px; right: 4px; }
+@media (max-width: 1000px) {
+  body:has(.bottom-navigation) .pwa-install-prompt { bottom: calc(84px + env(safe-area-inset-bottom)); }
+}
 .portal-app { background: radial-gradient(ellipse at 95% 5%, #0057d908, transparent 45%), radial-gradient(ellipse at 30% 90%, #f5b40006, transparent 40%); }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline-color: #7199f5; }
 .brand { display: inline-flex; align-items: center; }
@@ -132,8 +143,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .statement-feature { background: #eaf1fe; border-color: #e0e9ff; }
 .statement-feature .eyebrow, .statement-feature p { color: #687b9c; }
 .statement-feature .action { color: #0046ae; border-color: #cbdafa; }
-.illustrated-intro { background: #eaf1fe; border-color: #e0e9ff; }
-.illustrated-intro p { color: #687b9c; }
 .report-options button.selected { background: var(--blue-soft); border-color: #b9cdfa; color: var(--blue); }
 .report-options button.selected > strong { color: #0046ae; }
 .allocation-total { background: var(--blue-soft); }
@@ -189,6 +198,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .overview-summary-grid > .stat > strong { font-size: 26px; margin-top: 9px; }
 .overview-summary-grid > .stat > .stat-note { margin-top: 9px; font-size: 10px; line-height: 1.6; }
 .admin-activity-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 22px; align-items: start; }
+
+/* Warm accents for the administrator overview. */
+.admin-portal .chart-drawing polyline { stroke: var(--gold); }
+.admin-portal .chart-drawing circle { fill: var(--gold); }
+.admin-portal .chart-drawing linearGradient stop { stop-color: var(--gold); }
+.admin-portal .chart-caption i { background: var(--gold); }
+.admin-portal .sidebar-message { background: #fff; border-color: var(--line); }
+.admin-portal .sidebar-message strong::after { content: ""; display: block; width: 24px; height: 2px; margin-top: 9px; border-radius: 2px; background: var(--gold); }
+.admin-portal .participation-track { background: #fff0c2; }
+.admin-portal .participation-track > span { background: var(--gold); }
+.admin-portal .participation-footer b { color: #946600; }
+.admin-portal .attention-panel .stat-icon.peach { background: transparent; color: #946600; }
+.admin-portal .savings-credit-card-balance p > svg { color: #ffda70; }
+.admin-portal .savings-credit-card-balance p b { color: #ffda70; }
 
 @media (max-width: 1300px) {
   .overview-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
