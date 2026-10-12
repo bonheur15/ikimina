@@ -105,3 +105,18 @@
 .growth-panel .section-heading .choice-sm { min-width: 150px; }
 .form-grid .picker-trigger { min-width: 0; }
 @media (max-width: 720px) { .filter-bar .filter-choice { flex: 1; min-width: 0; } }
+
+/* Elayo calendar panels: an explicit period, selected state and compact month tiles. */
+.picker-trigger > .picker-mark { display: grid; place-items: center; flex: 0 0 30px; width: 30px; height: 30px; border-radius: 8px; background: #f0f5ff; color: var(--blue); }
+.date-picker-pop, .month-picker-pop { padding: 16px; border-color: #d7e3f7; border-radius: 17px; max-width: calc(100vw - 24px); max-height: var(--radix-popover-content-available-height); overflow-y: auto; }
+.picker-panel-heading { display: flex; align-items: center; gap: 11px; padding-bottom: 14px; margin-bottom: 12px; border-bottom: 1px solid #e8eef9; }
+.picker-panel-heading > svg { color: var(--blue); flex-shrink: 0; }
+.picker-panel-heading strong { display: block; color: var(--ink); font-size: 13px; font-weight: 600; }
+.picker-panel-heading span { display: block; font-size: 10.5px; line-height: 1.6; color: var(--muted); margin-top: 3px; }
+.date-picker-pop .cal, .month-picker-pop .cal { width: min(280px, calc(100vw - 58px)); }
+.month-picker-pop .cal-months { gap: 8px; margin: 5px 0; }
+.month-picker-pop .cal-months button { height: 46px; border-radius: 11px; font-size: 12px; }
+.cal-months button[aria-pressed="true"]:hover, .cal-days button[aria-pressed="true"]:hover { background: var(--blue-dark); color: #fff; }
+.picker-selection { display: flex; align-items: center; gap: 7px; margin-top: 13px; padding-top: 13px; border-top: 1px solid #e8eef9; color: var(--blue); font-size: 11px; font-weight: 500; }
+.cal-nav:disabled { color: #bbc5d3; background: transparent; cursor: default; }
+@media (prefers-reduced-motion: reduce) { .picker-pop, .choice-menu { animation: none; } }
