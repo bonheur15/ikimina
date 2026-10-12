@@ -73,6 +73,8 @@ svg { flex-shrink: 0; }
 .sidebar-message p { margin-top: 6px; color: var(--blue); font-size: 11px; line-height: 1.7; }
 .sidebar-help, .workspace-switch { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 11px; background: transparent; border: 0; padding: 0 10px; width: 100%; color: #718092; }
 .sidebar-help svg:last-child, .workspace-switch svg:last-child { margin-left: auto; }
+.install-hint { margin: -4px 10px 8px; padding: 10px 12px; border-radius: 9px; background: #f5f8ff; color: #5d6d80; font-size: 11px; line-height: 1.6; }
+.install-hint svg { vertical-align: -2px; color: var(--blue); }
 .workspace-switch { color: var(--blue); font-size: 10px; }
 .sidebar-identity { display: flex; align-items: center; gap: 10px; padding: 20px 9px; border-top: 1px solid var(--line); margin-top: 15px; }
 .sidebar-identity strong { display: block; font-size: 11px; }
