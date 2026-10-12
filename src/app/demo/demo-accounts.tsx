@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 import { ArrowRight, Check, Copy, ShieldCheck, UserRound } from "lucide-react";
 import { demoSignIn } from "./actions";
 
-type Account = { role: "admin" | "member"; title: string; detail: string; identifier: string; altIdentifier?: string; password: string };
+type Account = { role: "admin" | "member" | "superadmin" | "manager"; title: string; detail: string; identifier: string; altIdentifier?: string; password: string };
 
 function CopyField({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
@@ -19,7 +19,7 @@ export function DemoAccounts({ accounts }: { accounts: Account[] }) {
   const [pending, start] = useTransition();
   const [active, setActive] = useState<string | null>(null);
   return <div className="demo-accounts">{accounts.map(a => <section key={a.role} className="demo-card">
-    <div className="demo-card-head"><span className="stat-icon blue">{a.role === "admin" ? <ShieldCheck size={18} /> : <UserRound size={18} />}</span><div><strong>{a.title}</strong><small>{a.detail}</small></div></div>
+    <div className="demo-card-head"><span className="stat-icon blue">{a.role !== "member" ? <ShieldCheck size={18} /> : <UserRound size={18} />}</span><div><strong>{a.title}</strong><small>{a.detail}</small></div></div>
     <CopyField label="Email" value={a.identifier} />
     {a.altIdentifier && <CopyField label="Or member code" value={a.altIdentifier} />}
     <CopyField label="Password" value={a.password} />
