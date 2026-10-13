@@ -64,6 +64,7 @@ import { usePortal } from "./account-dashboard";
 import { MemberPenalties } from "./penalty-assessments";
 import type { MemberPenaltyPlan } from "@/lib/penalty-automation";
 import { MemberSavingsWindow } from "./penalty-policy";
+import { MemberSharesCard } from "./share-plan-panels";
 
 export type MemberTab = "home" | "money" | "history" | "statements" | "account";
 type Props = {
@@ -814,6 +815,7 @@ function MemberAccount({ member, onChanged, language, onLanguage, onHelp }: Prop
           </dl>
         </section>
         <div className="account-sections">
+          <MemberSharesCard />
           <section className="panel">
             <SectionHeading
               title={t("Contact details", "Amakuru yo kuvugana")}
