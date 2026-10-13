@@ -3,16 +3,19 @@ import { db } from "@/db";
 import { mobilePayments } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { settlePayment } from "@/lib/mobile-money";
+import { getPaymentSettings } from "@/lib/payment-settings";
 import { providerTransaction, verifySignature } from "@/lib/xendly";
 
 export const runtime = "nodejs";
 export async function POST(request: Request) {
-  const secret = process.env.XENDLY_WEBHOOK_SECRET;
-  if (!secret) return Response.json({ error: "Webhook is not configured." }, { status: 503 });
+  const keys = Object.entries((await getPaymentSettings()).keys);
+  if (!keys.length) return Response.json({ error: "Webhook is not configured." }, { status: 503 });
   const raw = await request.text();
   if (raw.length > 65_536) return Response.json({ error: "Body too large." }, { status: 413 });
-  if (!verifySignature(raw, request.headers.get("x-xendly-signature"), secret))
-    return Response.json({ error: "Invalid signature." }, { status: 401 });
+  // Test and live apps each sign with their own secret; accept either so earlier payments still settle.
+  const signature = request.headers.get("x-xendly-signature");
+  const signedModes = keys.filter(([, k]) => verifySignature(raw, signature, k.webhookSecret)).map(([mode]) => mode);
+  if (!signedModes.length) return Response.json({ error: "Invalid signature." }, { status: 401 });
   const envelope = z.object({ type: z.string(), data: z.unknown() }).safeParse(
     (() => {
       try {
@@ -34,6 +37,8 @@ export async function POST(request: Request) {
   const parsed = providerTransaction.safeParse(envelope.data.data);
   if (!parsed.success || parsed.data.direction !== expected.direction || parsed.data.status !== expected.status)
     return Response.json({ error: "Invalid transaction." }, { status: 400 });
+  if (!signedModes.includes(parsed.data.mode))
+    return Response.json({ error: "Event mode does not match its signing secret." }, { status: 401 });
   const deliveryId = request.headers.get("x-xendly-delivery");
   if (!deliveryId || deliveryId.length > 200) return Response.json({ error: "Missing delivery id." }, { status: 400 });
   try {
