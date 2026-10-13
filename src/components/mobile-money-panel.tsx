@@ -30,7 +30,7 @@ import {
   searchLoanBackers,
 } from "@/app/actions/mobile-money";
 import type { FinanceData } from "@/lib/mobile-money";
-import { currentPeriod, money, SHARE_VALUE, type Member } from "@/lib/portal-data";
+import { currentPeriod, money, type Member } from "@/lib/portal-data";
 import { DEFAULT_FEE_BPS, quoteCollection, quotePayout } from "@/lib/payment-fees";
 import { DEFAULT_LOAN_POLICY, type LoanPolicy } from "@/lib/loan-policy";
 import { canApproveLoans, canEditRecords } from "@/lib/permissions";
@@ -40,7 +40,7 @@ import { ContributionProofList, ReceiptContributionForm } from "./contribution-p
 import { PushNotificationButton } from "./push-notifications";
 import { savingsContributionPeriod } from "@/lib/penalty-policy";
 import { Action, EmptyState, SectionHeading, useDateLabel, useT } from "./portal-ui";
-import { ShareAmountField } from "./share-amount-field";
+import { SavingsAmountField } from "./share-amount-field";
 import { MonthField } from "./ui/date-field";
 import { Choice } from "./ui/choice";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
@@ -474,7 +474,7 @@ function FeeSummary({
         <span>{direction === "collect" ? t("Amount", "Amafaranga") : t("You receive", "Uzakira")}</span>
         <strong>{money(value)} RWF</strong>
       </div>
-      <div>
+      <div className="finance-fee-line">
         <span>{t("Mobile money fee", "Ikiguzi cya telefoni")}</span>
         <strong>{money(quote.fee)} RWF</strong>
       </div>
@@ -527,7 +527,7 @@ function ContributionForm({
   const t = useT();
   const outstanding = loans.filter((r) => r.kind === "loan" && r.status === "paid" && (r.outstanding ?? 0) > 0);
   const [kind, setKind] = useState<"savings" | "social" | "loan_repayment">(repayment ? "loan_repayment" : "savings");
-  const [shares, setShares] = useState("1");
+  const [savingsAmount, setSavingsAmount] = useState("");
   const [amount, setAmount] = useState(String(repayment ? (outstanding[0]?.outstanding ?? 0) : socialMonthly));
   const [phone, setPhone] = useState(member.phone);
   const [period, setPeriod] = useState(repayment ? currentPeriod() : savingsContributionPeriod());
@@ -561,7 +561,7 @@ function ContributionForm({
     </div>
   );
   const action = useFinanceAction(onChanged);
-  const total = kind === "savings" ? Number(shares) * SHARE_VALUE : Number(amount);
+  const total = kind === "savings" ? Number(savingsAmount) : Number(amount);
   if (channel === "receipt" && !repayment)
     return (
       <>
@@ -637,7 +637,7 @@ function ContributionForm({
                     setPeriod(v === "savings" ? savingsContributionPeriod() : currentPeriod());
                   }}
                   options={[
-                    { value: "savings", label: t("Savings shares", "Imigabane y’ubwizigame") },
+                    { value: "savings", label: t("Savings", "Ubwizigame") },
                     { value: "social", label: t("Social contribution", "Umusanzu w’ingoboka") },
                   ]}
                 />
@@ -662,7 +662,7 @@ function ContributionForm({
               </label>
             )}
             {kind === "savings" ? (
-              <ShareAmountField value={shares} onChange={setShares} />
+              <SavingsAmountField period={period} value={savingsAmount} onChange={setSavingsAmount} />
             ) : (
               <label className="field">
                 {t("Amount (RWF)", "Amafaranga (RWF)")}
@@ -1291,7 +1291,7 @@ function PaymentList({
               {p.mode === "test" ? " · TEST" : ""}
             </small>
             {p.failureMessage && <p className="form-error">{p.failureMessage}</p>}
-            <small>
+            <small className="danger-text">
               {t("Provider fee", "Ikiguzi")}: {money(["created", "pending"].includes(p.status) ? p.quotedFee : p.fee)}{" "}
               RWF{p.feePolicy === "member" ? ` · ${t("Paid by member", "Yishyurwa n’umunyamuryango")}` : ""}
             </small>
@@ -1637,7 +1637,7 @@ function RequestList({
                         <>
                           <div>
                             <dt>{t("Provider fee", "Ikiguzi cya telefoni")}</dt>
-                            <dd>{money(r.quotedFee)} RWF</dd>
+                            <dd className="danger-text">{money(r.quotedFee)} RWF</dd>
                           </div>
                           <div className="request-detail-total">
                             <dt>
