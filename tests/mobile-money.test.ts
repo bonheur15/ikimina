@@ -13,8 +13,18 @@ test("mobile money accounting and webhook integration", { skip: !process.env.TES
   const { eq, and } = await import("drizzle-orm");
   const { db, sql: client } = await import("../src/db/index");
   const { runMigrations } = await import("../src/db/migrate");
-  const { members, users, mobilePayments, ledgerEntries, cashbookEntries, financeRequests, paymentDeliveries } =
-    await import("../src/db/schema");
+  const {
+    members,
+    users,
+    mobilePayments,
+    ledgerEntries,
+    cashbookEntries,
+    financeRequests,
+    paymentDeliveries,
+    settings,
+  } = await import("../src/db/schema");
+  process.env.AUTH_SECRET ??= "fixture-auth-secret";
+  const { getPaymentConfig, sealPaymentSecret } = await import("../src/lib/payment-settings");
   const { settlePayment, submitPayment, availableSavings, loanOutstanding, loadFinance } =
     await import("../src/lib/mobile-money");
   const { POST } = await import("../src/app/api/payments/xendly/webhook/route");
@@ -135,7 +145,7 @@ test("mobile money accounting and webhook integration", { skip: !process.env.TES
       assert.equal((await find(refused.id)).status, "failed");
     });
     await t.test("minimal create responses are bound then reconciled with the full provider object", async () => {
-      const row = await create({ mode: "test", purpose: "social", amount: 100 });
+      const row = await create({ purpose: "social", amount: 100 });
       const event = { ...provider(row, "pending"), fee: 2 };
       const minimal: Partial<typeof event> = { ...event };
       delete minimal.mode;
@@ -358,6 +368,56 @@ test("mobile money accounting and webhook integration", { skip: !process.env.TES
       await settlePayment({ ...provider(finalPayment), fee: 130 });
       assert.equal(await loanOutstanding(db, funded), 0);
       assert.equal(await availableSavings(db, borrower.id), 4);
+    });
+    await t.test("superadmin-saved keys replace environment keys and each payment keeps its mode's key", async () => {
+      const slot = (key: string, secret: string) => ({
+        encryptedKey: sealPaymentSecret(key),
+        encryptedSecret: sealPaymentSecret(secret),
+      });
+      const save = (value: object) =>
+        db
+          .insert(settings)
+          .values({ key: "xendly", value })
+          .onConflictDoUpdate({ target: settings.key, set: { value } });
+      await save({
+        mode: "test",
+        feeBps: 300,
+        test: slot("saved-test-key", "saved-test-secret"),
+        live: slot("saved-live-key", "saved-live-secret"),
+      });
+      try {
+        assert.deepEqual(await getPaymentConfig(), { mode: "test", configured: true, feeBps: 300 });
+        const row = await create({ purpose: "social", amount: 1000 });
+        const auth: string[] = [],
+          providerId = randomUUID();
+        globalThis.fetch = async (_url, options) => {
+          auth.push(new Headers(options?.headers).get("Authorization")!);
+          return Response.json({ success: true, payload: provider(row, "pending", providerId) });
+        };
+        await submitPayment(row);
+        assert.deepEqual(auth, ["Bearer saved-live-key"]);
+        const event = provider(row, "succeeded", providerId);
+        const body = JSON.stringify({ type: "payment.succeeded", data: event });
+        const signed = (secret: string) => {
+          const timestamp = String(Math.floor(Date.now() / 1000));
+          return new Request("https://example.test/api/payments/xendly/webhook", {
+            method: "POST",
+            body,
+            headers: {
+              "x-xendly-signature": `t=${timestamp},v1=${createHmac("sha256", secret).update(`${timestamp}.${body}`).digest("hex")}`,
+              "x-xendly-delivery": `saved-keys-${secret}`,
+            },
+          });
+        };
+        assert.equal((await POST(signed("fixture-secret"))).status, 401);
+        assert.equal((await POST(signed("saved-test-secret"))).status, 401);
+        assert.equal((await POST(signed("saved-live-secret"))).status, 200);
+        assert.equal((await find(row.id)).status, "succeeded");
+        await save({ mode: "live", disabled: true, live: slot("saved-live-key", "saved-live-secret") });
+        assert.equal((await getPaymentConfig()).configured, false);
+      } finally {
+        await db.delete(settings).where(eq(settings.key, "xendly"));
+      }
     });
   } finally {
     globalThis.fetch = originalFetch;
