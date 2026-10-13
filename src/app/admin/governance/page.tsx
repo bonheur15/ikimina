@@ -1,4 +1,5 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
+import { headers } from "next/headers";
 import { db } from "@/db";
 import { users, pushNotifications } from "@/db/schema";
 import { AccountDashboard } from "@/components/account-dashboard";
@@ -6,6 +7,7 @@ import { GovernancePanel } from "@/components/governance-panel";
 import { requireAdmin } from "@/lib/auth/viewer";
 import { getLoanPolicy } from "@/lib/loan-service";
 import { getPushConfig } from "@/lib/notification-settings";
+import { getPaymentSettingsView } from "@/lib/payment-settings";
 
 export default async function GovernancePage() {
   const viewer = await requireAdmin();
@@ -39,6 +41,15 @@ export default async function GovernancePage() {
           .limit(1)
       : [];
   const config = superadmin ? await getPushConfig() : null;
+  const h = await headers();
+  const origin = (
+    config?.siteUrl ||
+    process.env.AUTH_URL ||
+    `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`
+  ).replace(/\/$/, "");
+  const payments = superadmin
+    ? { ...(await getPaymentSettingsView()), webhookUrl: `${origin}/api/payments/xendly/webhook` }
+    : null;
   const [queue] = superadmin
     ? await db
         .select({
@@ -54,6 +65,7 @@ export default async function GovernancePage() {
         accounts={accounts}
         bootstrap={viewer.role === "secretary" && supers === 0}
         policy={superadmin ? await getLoanPolicy() : null}
+        payments={payments}
         notifications={
           config
             ? {
