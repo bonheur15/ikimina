@@ -43,17 +43,32 @@ export function verifySignature(raw: string, header: string | null, secret: stri
   return timingSafeEqual(expected, Buffer.from(match[2], "hex"));
 }
 
-export function paymentConfig() {
-  const mode = process.env.XENDLY_MODE ?? "test";
+export type PaymentMode = "test" | "live";
+export type PaymentKeys = { apiKey: string; webhookSecret: string };
+export type PaymentSettings = { mode: PaymentMode; feeBps: number; keys: Partial<Record<PaymentMode, PaymentKeys>> };
+
+export function checkPaymentMode(mode: string): PaymentMode {
   if (mode !== "test" && mode !== "live") throw new Error("XENDLY_MODE must be test or live.");
-  const feeBps = Number(process.env.XENDLY_FEE_BPS ?? DEFAULT_FEE_BPS);
+  return mode;
+}
+export function checkFeeBps(feeBps: number) {
   if (!Number.isInteger(feeBps) || feeBps < 0 || feeBps >= 10_000)
     throw new Error("XENDLY_FEE_BPS must be a whole number from 0 to 9999.");
+  return feeBps;
+}
+// Server environment defaults; keys saved by the superadmin take precedence (see payment-settings.ts).
+export function envPaymentSettings(): PaymentSettings {
+  const mode = checkPaymentMode(process.env.XENDLY_MODE ?? "test");
+  const apiKey = process.env.XENDLY_API_KEY,
+    webhookSecret = process.env.XENDLY_WEBHOOK_SECRET;
   return {
     mode,
-    configured: Boolean(process.env.XENDLY_API_KEY && process.env.XENDLY_WEBHOOK_SECRET),
-    feeBps,
-  } as const;
+    feeBps: checkFeeBps(Number(process.env.XENDLY_FEE_BPS ?? DEFAULT_FEE_BPS)),
+    keys: apiKey && webhookSecret ? { [mode]: { apiKey, webhookSecret } } : {},
+  };
+}
+export function paymentConfig(settings: PaymentSettings) {
+  return { mode: settings.mode, configured: Boolean(settings.keys[settings.mode]), feeBps: settings.feeBps } as const;
 }
 
 export class ProviderError extends Error {
@@ -64,9 +79,8 @@ export class ProviderError extends Error {
   }
 }
 
-export async function xendlyRequest(path: string, body?: object, key?: string) {
-  if (!paymentConfig().configured)
-    throw new ProviderError("Mobile money is not connected yet. Please contact your administrator.");
+export async function xendlyRequest(apiKey: string | undefined, path: string, body?: object, key?: string) {
+  if (!apiKey) throw new ProviderError("Mobile money is not connected yet. Please contact your administrator.");
   let response: Response;
   try {
     response = await fetch(`https://api.xendlypay.com${path}`, {
@@ -74,7 +88,7 @@ export async function xendlyRequest(path: string, body?: object, key?: string) {
       cache: "no-store",
       signal: AbortSignal.timeout(12_000),
       headers: {
-        Authorization: `Bearer ${process.env.XENDLY_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         ...(key ? { "Idempotency-Key": key } : {}),
       },
