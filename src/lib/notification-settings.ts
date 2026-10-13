@@ -1,9 +1,9 @@
 import "server-only";
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { settings } from "@/db/schema";
+import { openSecret, sealSecret } from "./secret-box";
 
 export const notificationPolicySchema = z.object({
   enabled: z.boolean(),
@@ -24,28 +24,8 @@ export const DEFAULT_NOTIFICATION_POLICY: NotificationPolicy = {
   notifyBackers: false,
   maxQueueAgeDays: 7,
 };
-function key() {
-  if (!process.env.AUTH_SECRET) throw new Error("AUTH_SECRET is required to protect the OneSignal key.");
-  return createHash("sha256").update(`elayo-onesignal:${process.env.AUTH_SECRET}`).digest();
-}
-export function encryptPushKey(secret: string) {
-  const iv = randomBytes(12),
-    cipher = createCipheriv("aes-256-gcm", key(), iv);
-  const encrypted = Buffer.concat([cipher.update(secret, "utf8"), cipher.final()]);
-  return [
-    "v1",
-    iv.toString("base64url"),
-    encrypted.toString("base64url"),
-    cipher.getAuthTag().toString("base64url"),
-  ].join(".");
-}
-export function decryptPushKey(encrypted: string) {
-  const [version, iv, content, tag] = encrypted.split(".");
-  if (version !== "v1" || !iv || !content || !tag) throw new Error("Invalid encrypted key.");
-  const cipher = createDecipheriv("aes-256-gcm", key(), Buffer.from(iv, "base64url"));
-  cipher.setAuthTag(Buffer.from(tag, "base64url"));
-  return Buffer.concat([cipher.update(Buffer.from(content, "base64url")), cipher.final()]).toString("utf8");
-}
+export const encryptPushKey = (secret: string) => sealSecret("onesignal", secret);
+export const decryptPushKey = (encrypted: string) => openSecret("onesignal", encrypted);
 export async function getNotificationPolicy() {
   const [row] = await db.select().from(settings).where(eq(settings.key, "notificationPolicy"));
   return row ? notificationPolicySchema.parse(row.value) : DEFAULT_NOTIFICATION_POLICY;
