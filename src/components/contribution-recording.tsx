@@ -181,12 +181,13 @@ export function ContributionRecordingForm({
   const [saved, setSaved] = useState<MemberRecord | null>(null);
   const [error, setError] = useState("");
   const saving = kind === "savings";
-  const shareCount = Number(shares);
-  const calculated = Number.isFinite(shareCount) && shareCount > 0 ? shareCount * SHARE_VALUE : 0;
+  // Savings are recorded in RWF so members can pay part of a share.
+  const calculated = Number(shares) > 0 ? Number(shares) : 0;
   useEffect(() => {
     if (!memberId) return;
     const timer = window.setTimeout(
-      () => (formRef.current?.elements.namedItem(saving ? "shares" : "amount") as HTMLInputElement | null)?.focus(),
+      () =>
+        (formRef.current?.elements.namedItem(saving ? "savingsAmount" : "amount") as HTMLInputElement | null)?.focus(),
       50,
     );
     return () => window.clearTimeout(timer);
@@ -249,13 +250,8 @@ export function ContributionRecordingForm({
           setError(t("Search for and select a member first.", "Banza ushake kandi uhitemo umunyamuryango."));
           return;
         }
-        if (saving && (!Number.isSafeInteger(shareCount) || shareCount < 1 || shareCount > 20000)) {
-          setError(
-            t(
-              "Enter a whole number of shares between 1 and 20,000.",
-              "Andika umubare wuzuye w’imigabane hagati ya 1 na 20,000.",
-            ),
-          );
+        if (saving && (!Number.isSafeInteger(calculated) || calculated < 1 || calculated > 100000000)) {
+          setError(t("Enter the savings amount in whole RWF.", "Andika amafaranga y’ubwizigame yuzuye (RWF)."));
           return;
         }
         const paid = saving ? calculated : Number(amount);
@@ -278,7 +274,7 @@ export function ContributionRecordingForm({
           const result = await recordContribution({
             memberId,
             kind,
-            ...(saving ? { shares: shareCount } : { amount: paid }),
+            amount: paid,
             period: String(form.get("period")),
             date: String(form.get("date")),
             time: String(form.get("time")),
@@ -325,15 +321,15 @@ export function ContributionRecordingForm({
       {saving ? (
         <div className="share-entry">
           <label className="field">
-            {t("Number of shares", "Umubare w’imigabane")}
+            {t("Savings amount (RWF)", "Amafaranga y’ubwizigame (RWF)")}
             <input
-              name="shares"
+              name="savingsAmount"
               type="number"
               inputMode="numeric"
               min="1"
-              max="20000"
+              max="100000000"
               step="1"
-              placeholder="10"
+              placeholder="5,000"
               value={shares}
               onChange={(event) => {
                 setShares(event.target.value);
@@ -347,9 +343,9 @@ export function ContributionRecordingForm({
               <button
                 type="button"
                 key={count}
-                aria-pressed={shares === String(count)}
+                aria-pressed={shares === String(count * SHARE_VALUE)}
                 onClick={() => {
-                  setShares(String(count));
+                  setShares(String(count * SHARE_VALUE));
                   setError("");
                 }}
               >
@@ -360,12 +356,11 @@ export function ContributionRecordingForm({
           <div className="share-calculation">
             <Coins size={22} />
             <div>
-              <span>{t("Calculated contribution", "Agaciro k’umusanzu")}</span>
-              <output aria-live="polite">
-                {money(calculated)} <small>RWF</small>
-              </output>
+              <span>{t("Savings recorded", "Ubwizigame bwanditswe")}</span>
+              <output aria-live="polite">{sharesLabel(Math.round((calculated / SHARE_VALUE) * 100) / 100)}</output>
               <p>
-                {t("1 share", "Umugabane 1")} = {money(SHARE_VALUE)} RWF
+                {t("1 share", "Umugabane 1")} = {money(SHARE_VALUE)} RWF ·{" "}
+                {t("part of a share is fine", "igice cy’umugabane cyemewe")}
               </p>
             </div>
           </div>
