@@ -1,15 +1,15 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState, useTransition } from "react";
-import { Check, ChevronDown, FileText, Upload } from "lucide-react";
+import { Check, ChevronDown, FileText, Upload, X } from "lucide-react";
 import { cancelReceipt, reviewReceipt, uploadContributionReceipt } from "@/app/actions/contribution-proofs";
 import type { ContributionProofData } from "@/lib/contribution-proofs";
 import { canApproveContributions } from "@/lib/permissions";
-import { currentPeriod, kigaliToday, money, SHARE_VALUE } from "@/lib/portal-data";
+import { currentPeriod, kigaliToday, money } from "@/lib/portal-data";
 import { savingsContributionPeriod } from "@/lib/penalty-policy";
 import { usePortal } from "./account-dashboard";
 import { Action, EmptyState, useDateLabel, useT } from "./portal-ui";
-import { ShareAmountField } from "./share-amount-field";
+import { SavingsAmountField } from "./share-amount-field";
 import { DateField, MonthField } from "./ui/date-field";
 import { Choice } from "./ui/choice";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
@@ -29,7 +29,7 @@ export function ReceiptContributionForm({
 }) {
   const t = useT();
   const [kind, setKind] = useState<"savings" | "social">("savings");
-  const [shares, setShares] = useState("1");
+  const [savingsAmount, setSavingsAmount] = useState("");
   const [amount, setAmount] = useState(String(socialMonthly));
   const [method, setMethod] = useState("Bank transfer"),
     [period, setPeriod] = useState(savingsContributionPeriod()),
@@ -49,7 +49,7 @@ export function ReceiptContributionForm({
     },
     [preview],
   );
-  const total = kind === "savings" ? Number(shares) * SHARE_VALUE : Number(amount);
+  const total = kind === "savings" ? Number(savingsAmount) : Number(amount);
   if (sent)
     return (
       <div className="finance-complete">
@@ -136,19 +136,20 @@ export function ReceiptContributionForm({
                   setId(null);
                 }}
                 options={[
-                  { value: "savings", label: t("Savings shares", "Imigabane y’ubwizigame") },
+                  { value: "savings", label: t("Savings", "Ubwizigame") },
                   { value: "social", label: t("Social contribution", "Umusanzu w’ingoboka") },
                 ]}
               />
             </label>
             {kind === "savings" ? (
-              <ShareAmountField
-                value={shares}
+              <SavingsAmountField
+                period={period}
+                value={savingsAmount}
                 onChange={(v) => {
-                  setShares(v);
+                  setSavingsAmount(v);
                   setId(null);
                 }}
-                ariaLabel={t("Receipt savings shares", "Imigabane ku nyemezabwishyu")}
+                ariaLabel={t("Receipt savings amount", "Ubwizigame ku nyemezabwishyu")}
               />
             ) : (
               <label className="field">
@@ -366,7 +367,7 @@ export function ContributionProofList({
   const { viewer } = usePortal();
   const editable = admin && canApproveContributions(viewer.role);
   const [selected, setSelected] = useState<Proof | null>(null),
-    [decision, setDecision] = useState("approve"),
+    [verified, setVerified] = useState(false),
     [note, setNote] = useState(""),
     [error, setError] = useState("");
   const [pending, start] = useTransition();
@@ -437,7 +438,7 @@ export function ContributionProofList({
               onClick={() => {
                 setSelected(proof);
                 setNote("");
-                setDecision("approve");
+                setVerified(false);
                 setError("");
               }}
             >
@@ -531,24 +532,24 @@ export function ContributionProofList({
                   className="portal-form finance-task-form"
                   onSubmit={(e) => {
                     e.preventDefault();
+                    // Approve and Decline are both submit buttons; the clicked one decides.
+                    const approve =
+                      ((e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null)?.value === "approve";
+                    if (approve && !verified) {
+                      setError(
+                        t(
+                          "Confirm you verified the payment before approving.",
+                          "Banza wemeze ko wagenzuye ubwishyu mbere yo kwemeza.",
+                        ),
+                      );
+                      return;
+                    }
                     run(
-                      () => reviewReceipt({ id: selected.id, approve: decision === "approve", note }),
+                      () => reviewReceipt({ id: selected.id, approve, note }),
                       () => setSelected(null),
                     );
                   }}
                 >
-                  <label className="field">
-                    {t("Decision", "Icyemezo")}
-                    <Choice
-                      ariaLabel="Receipt review decision"
-                      value={decision}
-                      onChange={setDecision}
-                      options={[
-                        { value: "approve", label: t("Approve contribution", "Emeza umusanzu") },
-                        { value: "reject", label: t("Decline receipt", "Anga inyemezabwishyu") },
-                      ]}
-                    />
-                  </label>
                   <label className="field">
                     {t("Review note", "Ibisobanuro by’isuzuma")}
                     <textarea
@@ -560,25 +561,28 @@ export function ContributionProofList({
                       onChange={(e) => setNote(e.target.value)}
                     />
                   </label>
-                  {decision === "approve" && (
-                    <label className="penalty-check">
-                      <input type="checkbox" required />
-                      {t(
-                        "I verified the payment was received and is not already recorded.",
-                        "Nemeje ko ubwishyu bwakiriwe kandi butanditswe ahandi.",
-                      )}
-                    </label>
-                  )}
+                  <label className="penalty-check">
+                    <input type="checkbox" checked={verified} onChange={(e) => setVerified(e.target.checked)} />
+                    {t(
+                      "I verified the payment was received and is not already recorded (needed to approve).",
+                      "Nemeje ko ubwishyu bwakiriwe kandi butanditswe ahandi (birakenewe kugira ngo wemeze).",
+                    )}
+                  </label>
                   {error && (
                     <p role="alert" className="form-error">
                       {error}
                     </p>
                   )}
-                  <Action type="submit" busy={pending}>
-                    {decision === "approve"
-                      ? t("Approve & record contribution", "Emeza wandike umusanzu")
-                      : t("Decline receipt", "Anga inyemezabwishyu")}
-                  </Action>
+                  <div className="review-decision-actions">
+                    <Action type="submit" value="reject" className="danger" busy={pending}>
+                      <X size={15} />
+                      {t("Decline", "Anga")}
+                    </Action>
+                    <Action type="submit" value="approve" busy={pending}>
+                      <Check size={15} />
+                      {t("Approve & record", "Emeza wandike")}
+                    </Action>
+                  </div>
                 </form>
               )}
             </>
