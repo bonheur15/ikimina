@@ -39,14 +39,16 @@ export async function recordContribution(
   const parsed = contribution.safeParse(input);
   if (!parsed.success) return fail(firstIssue(parsed.error));
   const data = parsed.data;
+  // Savings may be part of a share: members can fill their month little by little.
   const amount =
-    data.kind === "savings" ? (data.shares ?? 0) * SHARE_VALUE : Math.round((data.amount ?? 0) * 100) / 100;
+    data.kind === "savings" && data.shares ? data.shares * SHARE_VALUE : Math.round((data.amount ?? 0) * 100) / 100;
   if (!amount)
     return fail(
       data.kind === "savings"
-        ? "Enter a whole number of shares between 1 and 20,000."
+        ? "Enter the savings amount in whole RWF."
         : "Enter an amount between 0.01 and 100,000,000 RWF.",
     );
+  if (data.kind === "savings" && !Number.isInteger(amount)) return fail("Enter the savings amount in whole RWF.");
   if (data.kind === "penalty" && !data.note) return fail("Enter the penalty reason or reference.");
   if (data.penaltyAssessmentId && data.kind !== "penalty") return fail("Only penalty payments can settle a penalty.");
   const paidAt = new Date(`${data.date}T${data.time}:00+02:00`);
@@ -165,7 +167,6 @@ const memberDetails = z.object({
     .transform((v) => v || null),
   phone: optionalText(60),
   district: optionalText(60),
-  monthlyCommitment: z.number().int().min(0).max(100_000_000).nullable(),
   status: z.enum(["active", "former"]),
 });
 
