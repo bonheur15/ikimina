@@ -8,6 +8,7 @@ import { createSignInLink, setAccountDisabled, updateMember } from "@/app/action
 import { money, principalOf, type Member } from "@/lib/portal-data";
 import { Action, SectionHeading, useT } from "./portal-ui";
 import { Choice } from "./ui/choice";
+import { MemberSharesAdmin } from "./share-plan-panels";
 
 /** Profile, contact details and sign-in account for one member, as seen by an administrator. */
 export function MemberAdminPanel({ member, onChanged }: { member: Member; onChanged: () => void }) {
@@ -67,10 +68,6 @@ export function MemberAdminPanel({ member, onChanged }: { member: Member; onChan
           <dt>{t("Savings principal", "Ubwizigame shingiro")}</dt>
           <dd>{money(principalOf(member))} RWF</dd>
         </div>
-        <div>
-          <dt>{t("Monthly savings", "Ubwizigame bwa buri kwezi")}</dt>
-          <dd>{member.monthlySavings ? `${money(member.monthlySavings)} RWF` : t("Not set", "Ntibirashyirwaho")}</dd>
-        </div>
       </dl>
       {editable && !editing && (
         <button className="text-action" onClick={() => setEditing(true)}>
@@ -84,7 +81,6 @@ export function MemberAdminPanel({ member, onChanged }: { member: Member; onChan
           onSubmit={(event) => {
             event.preventDefault();
             const form = new FormData(event.currentTarget);
-            const commitment = String(form.get("monthlyCommitment") ?? "").trim();
             start(async () => {
               const result = await updateMember({
                 code: member.id,
@@ -93,7 +89,6 @@ export function MemberAdminPanel({ member, onChanged }: { member: Member; onChan
                 email: String(form.get("email")),
                 phone: String(form.get("phone")),
                 district: String(form.get("district")),
-                monthlyCommitment: commitment ? Number(commitment) : null,
                 status: String(form.get("status")) as "active",
               });
               if (!result.ok) {
@@ -131,16 +126,6 @@ export function MemberAdminPanel({ member, onChanged }: { member: Member; onChan
               {t("District", "Akarere")}
               <input name="district" defaultValue={member.district} maxLength={60} />
             </label>
-            <label className="field">
-              {t("Monthly savings (RWF)", "Ubwizigame bwa buri kwezi (RWF)")}
-              <input
-                name="monthlyCommitment"
-                type="number"
-                min="0"
-                step="1000"
-                defaultValue={member.monthlySavings || ""}
-              />
-            </label>
           </div>
           <div className="field">
             {t("Status", "Uko ahagaze")}
@@ -172,6 +157,7 @@ export function MemberAdminPanel({ member, onChanged }: { member: Member; onChan
         </form>
       )}
 
+      <MemberSharesAdmin code={member.id} editable={editable} onChanged={onChanged} />
       {editable && (
         <section className="account-box">
           <SectionHeading
