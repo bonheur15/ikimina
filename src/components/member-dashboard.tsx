@@ -218,13 +218,13 @@ function MemberHome({
             <div className="contribution-status">
               <div className="contribution-ring">
                 <svg viewBox="0 0 72 72" aria-hidden="true">
-                  <circle cx="36" cy="36" r="30" fill="none" stroke="#e8eefb" strokeWidth="5" />
+                  <circle cx="36" cy="36" r="30" fill="none" stroke="#fff0c2" strokeWidth="5" />
                   <circle
                     cx="36"
                     cy="36"
                     r="30"
                     fill="none"
-                    stroke="#0057d9"
+                    stroke="#f5b400"
                     strokeWidth="5"
                     strokeDasharray={`${progress * 188.5} 188.5`}
                     strokeLinecap="round"
