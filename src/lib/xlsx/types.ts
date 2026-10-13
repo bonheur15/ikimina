@@ -4,7 +4,15 @@
 export type BorderEdge = { style: string; color: string };
 
 export type CellStyle = {
-  font?: { name?: string; size?: number; bold?: boolean; italic?: boolean; underline?: boolean; strike?: boolean; color?: string };
+  font?: {
+    name?: string;
+    size?: number;
+    bold?: boolean;
+    italic?: boolean;
+    underline?: boolean;
+    strike?: boolean;
+    color?: string;
+  };
   fill?: string;
   border?: { top?: BorderEdge; right?: BorderEdge; bottom?: BorderEdge; left?: BorderEdge };
   align?: { h?: string; v?: string; wrap?: boolean; indent?: number; rotate?: number; shrink?: boolean };
