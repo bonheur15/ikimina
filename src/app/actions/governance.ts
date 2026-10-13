@@ -11,6 +11,14 @@ import { loanPolicySchema } from "@/lib/loan-policy";
 import { encryptPushKey, notificationPolicySchema } from "@/lib/notification-settings";
 import { runLoanReminders } from "@/lib/loan-notifications";
 import { flushPushNotifications } from "@/lib/onesignal";
+import {
+  PAYMENT_MODES,
+  PAYMENT_SETTING,
+  paymentKeysFor,
+  sealPaymentSecret,
+  type StoredPaymentSettings,
+} from "@/lib/payment-settings";
+import { xendlyRequest } from "@/lib/xendly";
 import type { FinanceTx } from "@/lib/finance-lock";
 
 async function perform<T>(work: () => Promise<T>) {
@@ -241,6 +249,84 @@ export async function saveNotificationSettings(input: unknown) {
         },
       });
     });
+  });
+}
+const paymentKeyInput = z.object({
+  apiKey: z.string().trim().max(1000),
+  webhookSecret: z.string().trim().max(1000),
+  clear: z.boolean(),
+});
+export async function savePaymentSettings(input: unknown) {
+  return perform(async () => {
+    const actor = await assertSuperadmin();
+    const data = z
+      .object({
+        mode: z.enum(PAYMENT_MODES),
+        feeBps: z.number().int().min(0, "The provider fee cannot be negative.").max(9999),
+        test: paymentKeyInput,
+        live: paymentKeyInput,
+        disabled: z.boolean(),
+      })
+      .parse(input);
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`select pg_advisory_xact_lock(724503)`);
+      const [row] = await tx.select().from(settings).where(eq(settings.key, PAYMENT_SETTING));
+      const previous = (row?.value ?? {}) as StoredPaymentSettings;
+      const value: StoredPaymentSettings = { mode: data.mode, feeBps: data.feeBps, disabled: data.disabled };
+      for (const mode of PAYMENT_MODES) {
+        const entry = data[mode],
+          old = previous[mode];
+        const slot = entry.clear
+          ? { encryptedKey: null, encryptedSecret: null }
+          : {
+              encryptedKey: entry.apiKey ? sealPaymentSecret(entry.apiKey) : (old?.encryptedKey ?? null),
+              encryptedSecret: entry.webhookSecret
+                ? sealPaymentSecret(entry.webhookSecret)
+                : (old?.encryptedSecret ?? null),
+            };
+        if (!slot.encryptedKey !== !slot.encryptedSecret)
+          throw new Error(`Enter both the ${mode} API key and its webhook signing secret.`);
+        value[mode] = slot;
+      }
+      await tx
+        .insert(settings)
+        .values({ key: PAYMENT_SETTING, value })
+        .onConflictDoUpdate({ target: settings.key, set: { value, updatedAt: new Date() } });
+      await tx.insert(auditLog).values({
+        actorId: actor.id,
+        action: "payment.settings_update",
+        entity: "settings",
+        entityId: PAYMENT_SETTING,
+        details: {
+          mode: data.mode,
+          feeBps: data.feeBps,
+          disabled: data.disabled,
+          ...Object.fromEntries(
+            PAYMENT_MODES.map((mode) => [
+              mode,
+              {
+                keyUpdated: !!data[mode].apiKey,
+                secretUpdated: !!data[mode].webhookSecret,
+                cleared: data[mode].clear,
+              },
+            ]),
+          ),
+        },
+      });
+    });
+  });
+}
+export async function testPaymentConnection(mode: "test" | "live") {
+  return perform(async () => {
+    await assertSuperadmin();
+    z.enum(PAYMENT_MODES).parse(mode);
+    const keys = await paymentKeysFor(mode);
+    if (!keys) throw new Error(`No active ${mode} keys. Save both ${mode} keys and make sure payments are not paused.`);
+    const balance = z
+      .object({ available: z.coerce.number().optional(), pending: z.coerce.number().optional() })
+      .catch({})
+      .parse(await xendlyRequest(keys.apiKey, "/v1/balance?currency=RWF"));
+    return balance;
   });
 }
 export async function triggerNotifications() {
