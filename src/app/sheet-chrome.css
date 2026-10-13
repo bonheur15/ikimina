@@ -1,11 +1,80 @@
 /* Shared chrome for spreadsheet views: toolbar, cell info bar and bottom tabs. */
-.wb-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--line); background: #fbfcfd; }
-.wb-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.wb-tool { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border: 1px solid var(--line); border-radius: 9px; background: #fff; font-size: 12.5px; font-weight: 500; color: var(--ink); }
-.wb-tool.on { border-color: #b9cdf6; background: var(--blue-soft); color: var(--blue); }
-.wb-formula-bar { display: grid; grid-template-columns: 92px 34px minmax(0, 1fr); align-items: stretch; border-bottom: 1px solid #d6dbe1; font: 12.5px/1 Calibri, Carlito, "Segoe UI", Arial, sans-serif; background: #fff; }
-.wb-formula-bar > span { padding: 7px 9px; min-height: 30px; display: flex; align-items: center; }
-.wb-name-box { border-right: 1px solid #d6dbe1; font-weight: 600; }
-.wb-fx { border-right: 1px solid #d6dbe1; font-style: italic; color: #6b7785; justify-content: center; }
-.wb-formula { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
-.wb-tabs { display: flex; align-items: stretch; gap: 2px; padding: 0 8px; border-top: 1px solid #d6dbe1; background: #f3f4f6; overflow-x: auto; scrollbar-width: thin; }
+.wb-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  background: #fbfcfd;
+}
+.wb-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.wb-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.wb-tool.on {
+  border-color: #b9cdf6;
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.wb-formula-bar {
+  display: grid;
+  grid-template-columns: 92px 34px minmax(0, 1fr);
+  align-items: stretch;
+  border-bottom: 1px solid #d6dbe1;
+  font:
+    12.5px/1 Calibri,
+    Carlito,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+  background: #fff;
+}
+.wb-formula-bar > span {
+  padding: 7px 9px;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+}
+.wb-name-box {
+  border-right: 1px solid #d6dbe1;
+  font-weight: 600;
+}
+.wb-fx {
+  border-right: 1px solid #d6dbe1;
+  font-style: italic;
+  color: #6b7785;
+  justify-content: center;
+}
+.wb-formula {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+.wb-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 0 8px;
+  border-top: 1px solid #d6dbe1;
+  background: #f3f4f6;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
