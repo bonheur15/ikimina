@@ -64,6 +64,13 @@
       "when": 1791837584735,
       "tag": "0008_noisy_vulture",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791873853717,
+      "tag": "0009_member_share_plans",
+      "breakpoints": true
     }
   ]
 }
