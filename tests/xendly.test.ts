@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 import { test } from "node:test";
 import {
+  envPaymentSettings,
   normalizePhone,
   paymentConfig,
   providerTransaction,
@@ -68,15 +69,22 @@ test("provider client retains idempotency keys and separates definite refusal fr
   process.env.XENDLY_WEBHOOK_SECRET = "fixture-secret";
   process.env.XENDLY_MODE = "test";
   try {
-    assert.deepEqual(paymentConfig(), { configured: true, mode: "test", feeBps: 250 });
+    assert.deepEqual(paymentConfig(envPaymentSettings()), { configured: true, mode: "test", feeBps: 250 });
+    assert.deepEqual(paymentConfig({ mode: "live", feeBps: 300, keys: envPaymentSettings().keys }), {
+      configured: false,
+      mode: "live",
+      feeBps: 300,
+    });
+    await assert.rejects(xendlyRequest(undefined, "/v1/payments"), ProviderError);
     const seen: string[] = [];
     globalThis.fetch = async (url, options) => {
       assert.equal(url, "https://api.xendlypay.com/v1/payments");
+      assert.equal(new Headers(options?.headers).get("Authorization"), "Bearer fixture-key");
       seen.push(new Headers(options?.headers).get("Idempotency-Key")!);
       return Response.json({ success: true, payload: { id: "fixture" } });
     };
-    await xendlyRequest("/v1/payments", { amount: 100 }, "same-reference");
-    await xendlyRequest("/v1/payments", { amount: 100 }, "same-reference");
+    await xendlyRequest("fixture-key", "/v1/payments", { amount: 100 }, "same-reference");
+    await xendlyRequest("fixture-key", "/v1/payments", { amount: 100 }, "same-reference");
     assert.deepEqual(seen, ["same-reference", "same-reference"]);
     for (const [status, definitive] of [
       [403, true],
@@ -86,7 +94,7 @@ test("provider client retains idempotency keys and separates definite refusal fr
     ] as const) {
       globalThis.fetch = async () => Response.json({ message: "Refused" }, { status });
       await assert.rejects(
-        xendlyRequest("/v1/payments", {}, "same-reference"),
+        xendlyRequest("fixture-key", "/v1/payments", {}, "same-reference"),
         (error) => error instanceof ProviderError && error.definitive === definitive,
       );
     }
@@ -94,7 +102,7 @@ test("provider client retains idempotency keys and separates definite refusal fr
       throw new Error("Network timeout");
     };
     await assert.rejects(
-      xendlyRequest("/v1/payments", {}, "same-reference"),
+      xendlyRequest("fixture-key", "/v1/payments", {}, "same-reference"),
       (error) => error instanceof ProviderError && !error.definitive,
     );
   } finally {
