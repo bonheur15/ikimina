@@ -14,6 +14,17 @@ export default async function MemberLayout({ children }: LayoutProps<"/member">)
     : [[], [], await loadSettings()];
   const penalties = memberId ? await loadMemberPenalties(memberId) : [];
   const penaltyPlan = memberId ? await memberPenaltyPlan(memberId) : undefined;
-  return <AccountProvider initialLanguage={(await cookies()).get("elayo-language")?.value === "rw" ? "rw" : "en"} viewer={{ name: viewer.name, role: viewer.role, memberCode: viewer.member?.code ?? null, email: viewer.email }}
-    people={people} records={records} penalties={penalties} penaltyPlan={penaltyPlan} {...settings}>{children}</AccountProvider>;
+  return (
+    <AccountProvider
+      initialLanguage={(await cookies()).get("elayo-language")?.value === "rw" ? "rw" : "en"}
+      viewer={{ name: viewer.name, role: viewer.role, memberCode: viewer.member?.code ?? null, email: viewer.email }}
+      people={people}
+      records={records}
+      penalties={penalties}
+      penaltyPlan={penaltyPlan}
+      {...settings}
+    >
+      {children}
+    </AccountProvider>
+  );
 }
