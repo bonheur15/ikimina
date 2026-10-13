@@ -145,8 +145,9 @@ test("private contribution receipts and secretary accounting", { skip: !process.
       "invalid uploads, dates and savings shares are rejected; ownership governs receipt access",
       async () => {
         await assert.rejects(
-          service.submitContributionProof(owner, input({ amount: 5100 }), receipt()),
-          /whole shares/,
+          // Partial shares are allowed, but never more than the month's 10 shares (50,000 RWF).
+          service.submitContributionProof(owner, input({ amount: 50100, period: "2026-09" }), receipt()),
+          /Only 50,000 RWF remains/,
         );
         await assert.rejects(
           service.submitContributionProof(owner, input({ paidOn: "2099-01-01" }), receipt()),
