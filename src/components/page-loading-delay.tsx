@@ -18,5 +18,9 @@ function DelayedPage({ children, delay }: { children: ReactNode; delay: number }
 /** Login shows the logo for four seconds; other pages show it for two. */
 export function PageLoadingDelay({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  return <DelayedPage key={pathname} delay={pathname === "/login" ? 4000 : 2000}>{children}</DelayedPage>;
+  return (
+    <DelayedPage key={pathname} delay={pathname === "/login" ? 4000 : 2000}>
+      {children}
+    </DelayedPage>
+  );
 }
