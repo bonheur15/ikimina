@@ -9,14 +9,19 @@ export function ResponsiveTable({ children, className = "", ...props }: Componen
   useLayoutEffect(() => {
     const table = ref.current;
     if (!table) return;
-    const labels = Array.from(table.querySelectorAll("thead th"), th => th.textContent?.trim() || "");
-    table.querySelectorAll("tbody tr").forEach(row => {
+    const labels = Array.from(table.querySelectorAll("thead th"), (th) => th.textContent?.trim() || "");
+    table.querySelectorAll("tbody tr").forEach((row) => {
       row.querySelectorAll("td").forEach((cell, index) => {
         cell.dataset.label = labels[index] || "";
-        cell.dataset.action = cell.children.length === 1 && cell.firstElementChild?.classList.contains("icon-button") ? "true" : "false";
+        cell.dataset.action =
+          cell.children.length === 1 && cell.firstElementChild?.classList.contains("icon-button") ? "true" : "false";
         cell.dataset.empty = cell.colSpan > 1 ? "true" : "false";
       });
     });
   }, [children]);
-  return <Table ref={ref} className={`mobile-card-table ${className}`} {...props}>{children}</Table>;
+  return (
+    <Table ref={ref} className={`mobile-card-table ${className}`} {...props}>
+      {children}
+    </Table>
+  );
 }
