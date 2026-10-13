@@ -1,28 +1,123 @@
 /* Printable report (Reports → PDF). */
-.report-print { max-width: 1100px; margin: 0 auto; padding: 28px; background: #fff; color: #1f2933; font: 12px/1.4 Calibri, Carlito, "Segoe UI", Arial, sans-serif; }
-.report-print.wide { max-width: none; }
-.report-print header { display: flex; align-items: center; gap: 20px; padding-bottom: 14px; border-bottom: 2px solid #0057d9; margin-bottom: 16px; }
-.report-print .print-logo { width: 120px; height: auto; }
-.report-print h1 { font-size: 20px; letter-spacing: -.3px; }
-.report-print header p { color: #6b7785; margin-top: 4px; }
-.print-toolbar { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; color: #6b7785; }
-.print-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 0 0 16px; }
-.print-summary div { border: 1px solid #d6dbe1; border-radius: 6px; padding: 8px 10px; }
-.print-summary dt { color: #6b7785; font-size: 11px; }
-.print-summary dd { margin: 3px 0 0; font-weight: 700; font-size: 13px; }
-.report-print table { width: 100%; border-collapse: collapse; }
-.report-print th, .report-print td { border: 1px solid #d6dbe1; padding: 4px 6px; text-align: left; vertical-align: top; }
-.report-print thead th { background: #e8edf3; font-weight: 700; }
-.report-print .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.report-print tfoot td { font-weight: 700; border-top: 2px solid #1f2933; background: #f3f4f6; }
-.report-print tbody tr:nth-child(even) td { background: #fafbfc; }
-.print-note { margin-top: 10px; color: #6b7785; font-style: italic; }
-.report-print footer { margin-top: 18px; color: #8a97a5; font-size: 10px; }
+.report-print {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px;
+  background: #fff;
+  color: #1f2933;
+  font:
+    12px/1.4 Calibri,
+    Carlito,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+}
+.report-print.wide {
+  max-width: none;
+}
+.report-print header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #0057d9;
+  margin-bottom: 16px;
+}
+.report-print .print-logo {
+  width: 120px;
+  height: auto;
+}
+.report-print h1 {
+  font-size: 20px;
+  letter-spacing: -0.3px;
+}
+.report-print header p {
+  color: #6b7785;
+  margin-top: 4px;
+}
+.print-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  color: #6b7785;
+}
+.print-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+  margin: 0 0 16px;
+}
+.print-summary div {
+  border: 1px solid #d6dbe1;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+.print-summary dt {
+  color: #6b7785;
+  font-size: 11px;
+}
+.print-summary dd {
+  margin: 3px 0 0;
+  font-weight: 700;
+  font-size: 13px;
+}
+.report-print table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.report-print th,
+.report-print td {
+  border: 1px solid #d6dbe1;
+  padding: 4px 6px;
+  text-align: left;
+  vertical-align: top;
+}
+.report-print thead th {
+  background: #e8edf3;
+  font-weight: 700;
+}
+.report-print .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.report-print tfoot td {
+  font-weight: 700;
+  border-top: 2px solid #1f2933;
+  background: #f3f4f6;
+}
+.report-print tbody tr:nth-child(even) td {
+  background: #fafbfc;
+}
+.print-note {
+  margin-top: 10px;
+  color: #6b7785;
+  font-style: italic;
+}
+.report-print footer {
+  margin-top: 18px;
+  color: #8a97a5;
+  font-size: 10px;
+}
 @media print {
-  @page { margin: 12mm; }
-  .print-toolbar { display: none; }
-  .report-print { padding: 0; max-width: none; }
-  .report-print thead { display: table-header-group; }
-  .report-print tr { break-inside: avoid; }
-  .report-print.wide { font-size: 9px; }
+  @page {
+    margin: 12mm;
+  }
+  .print-toolbar {
+    display: none;
+  }
+  .report-print {
+    padding: 0;
+    max-width: none;
+  }
+  .report-print thead {
+    display: table-header-group;
+  }
+  .report-print tr {
+    break-inside: avoid;
+  }
+  .report-print.wide {
+    font-size: 9px;
+  }
 }
