@@ -15,6 +15,7 @@ import {
 import { SHARE_VALUE, currentPeriod, kigaliToday } from "./portal-data";
 import { addDays, dailyPenalty, pausedOn, savingsWindow, type PenaltyPolicy } from "./penalty-policy";
 import { flushPushNotifications, pushConfigured } from "./onesignal";
+import { refreshCommitments } from "./share-plans";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export async function getPenaltyPolicy(): Promise<PenaltyPolicy> {
@@ -47,10 +48,19 @@ async function createCycles(policy: PenaltyPolicy, today: string) {
     const period = cursor.toISOString().slice(0, 7),
       window = savingsWindow(period);
     if (window.startsOn <= today) {
+      // Shares come from the member's schedule for that month; members never scheduled keep their commitment.
       await db.execute(sql`insert into savings_penalty_cycles (member_id, period, expected_shares, basis)
-        select id, ${period}, monthly_commitment / ${SHARE_VALUE}, ${policy.basis} from members
-        where status = 'active' and monthly_commitment > 0 and monthly_commitment % ${SHARE_VALUE} = 0
-        and created_at < ${addDays(window.startsOn, 1) + "T00:00:00+02:00"}::timestamptz
+        select id, ${period}, shares, ${policy.basis} from (
+          select m.id, m.created_at, case
+            when exists (select 1 from member_share_plans s where s.member_id = m.id) then (
+              select s.shares from member_share_plans s
+              where s.member_id = m.id and s.effective_period <= ${period}
+              order by s.effective_period desc limit 1)
+            when m.monthly_commitment % ${SHARE_VALUE} = 0 then m.monthly_commitment / ${SHARE_VALUE}
+          end as shares
+          from members m where m.status = 'active'
+        ) planned
+        where shares > 0 and created_at < ${addDays(window.startsOn, 1) + "T00:00:00+02:00"}::timestamptz
         on conflict (member_id, period) do nothing`);
     }
     cursor.setUTCMonth(cursor.getUTCMonth() + 1);
@@ -58,6 +68,7 @@ async function createCycles(policy: PenaltyPolicy, today: string) {
 }
 
 export async function runPenaltyAutomation(today = kigaliToday()) {
+  await refreshCommitments(db, undefined, today);
   const policy = await getPenaltyPolicy();
   let created = 0;
   if (policy.enabled) {
