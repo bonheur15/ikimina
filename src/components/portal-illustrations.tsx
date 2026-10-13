@@ -8,17 +8,25 @@ const illustrations = {
 
 type Illustration = keyof typeof illustrations;
 
-export function PortalIllustration({ asset, className = "", eager = false }: {
-  asset: Illustration; className?: string; eager?: boolean;
+export function PortalIllustration({
+  asset,
+  className = "",
+  eager = false,
+}: {
+  asset: Illustration;
+  className?: string;
+  eager?: boolean;
 }) {
-  return <Image
-    src={illustrations[asset]}
-    alt=""
-    aria-hidden="true"
-    width={768}
-    height={768}
-    unoptimized
-    loading={eager ? "eager" : "lazy"}
-    className={`portal-illustration portal-illustration-${asset} ${className}`}
-  />;
+  return (
+    <Image
+      src={illustrations[asset]}
+      alt=""
+      aria-hidden="true"
+      width={768}
+      height={768}
+      unoptimized
+      loading={eager ? "eager" : "lazy"}
+      className={`portal-illustration portal-illustration-${asset} ${className}`}
+    />
+  );
 }
