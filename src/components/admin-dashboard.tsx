@@ -51,6 +51,7 @@ import {
 } from "./portal-ui";
 import { ContributionHistory } from "./member-dashboard";
 import { MemberAdminPanel } from "./member-admin-panel";
+import { ShareRequestsPanel } from "./share-plan-panels";
 import { SavingsCard } from "./savings-card";
 import { usePortal, useWorkspace } from "./account-dashboard";
 import { Pager, ReportDownloads, SearchBox, useUrlState } from "./url-state";
@@ -253,8 +254,10 @@ export function AdminMembers({ data }: { data: MembersData }) {
     setDetail(null);
     void load(code);
   };
+  const [requestsKey, setRequestsKey] = useState(0);
   const changed = () => {
     refresh();
+    setRequestsKey((k) => k + 1);
     if (openCode) void load(openCode);
   };
   const accountLabel = (m: Member) =>
@@ -281,6 +284,7 @@ export function AdminMembers({ data }: { data: MembersData }) {
         )}
         action={<ReportDownloads report="member-register" params={{ filter: data.filter, q: data.q }} />}
       />
+      <ShareRequestsPanel key={requestsKey} onOpen={open} />
       <section className={`panel ${url.pending ? "is-loading" : ""}`}>
         <div className="history-toolbar">
           <div className="segmented">
