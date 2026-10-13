@@ -9,6 +9,18 @@ const nextConfig: NextConfig = {
     // Room for the one-time upload of the two source workbooks (Settings, fresh installs only).
     serverActions: { bodySizeLimit: "12mb" },
   },
+  async redirects() {
+    return [
+      {
+        // The app moved from ikimina.eu1.hubfly.app; keep old links working. API routes stay
+        // reachable on the old host so webhooks and schedulers don't break on a redirect.
+        source: "/:path((?!api/).*)",
+        has: [{ type: "host", value: "ikimina.eu1.hubfly.app" }],
+        destination: "https://elayo.eu1.hubfly.app/:path",
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {
