@@ -5,7 +5,8 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "Elayo Family",
     short_name: "Elayo",
-    description: "Your contributions, savings and statements. A personal space for every member of Caisse d’entraide Elayo Family.",
+    description:
+      "Your contributions, savings and statements. A personal space for every member of Caisse d’entraide Elayo Family.",
     start_url: "/",
     scope: "/",
     display: "standalone",
