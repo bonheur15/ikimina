@@ -28,8 +28,9 @@ import {
   submitPayment,
   unresolved,
 } from "@/lib/mobile-money";
-import { normalizePhone, paymentConfig, ProviderError } from "@/lib/xendly";
-import { SHARE_VALUE } from "@/lib/portal-data";
+import { normalizePhone, ProviderError } from "@/lib/xendly";
+import { getPaymentConfig, paymentKeysFor } from "@/lib/payment-settings";
+import { assertSavingsAllowed, ShareError } from "@/lib/share-plans";
 import { quoteCollection, quotePayout } from "@/lib/payment-fees";
 
 class FinanceError extends Error {}
@@ -79,7 +80,12 @@ async function run<T>(work: () => Promise<T>, revalidate = true) {
   } catch (error) {
     if (error instanceof z.ZodError)
       return { ok: false as const, error: error.issues[0]?.message ?? "Check the form." };
-    if (error instanceof FinanceError || error instanceof ProviderError || error instanceof LoanError)
+    if (
+      error instanceof FinanceError ||
+      error instanceof ProviderError ||
+      error instanceof LoanError ||
+      error instanceof ShareError
+    )
       return { ok: false as const, error: error.message };
     console.error("Finance operation failed", error);
     return {
@@ -100,8 +106,8 @@ function phone(value: string) {
     throw new FinanceError((error as Error).message);
   }
 }
-function configured(payout = false) {
-  const config = paymentConfig();
+async function configured(payout = false) {
+  const config = await getPaymentConfig();
   if (!config.configured)
     throw new FinanceError("Mobile money is not connected yet. Please contact your administrator.");
   if (payout && config.mode !== "live")
@@ -115,7 +121,7 @@ export async function getOwnFinance() {
     const policy = await getLoanPolicy();
     return {
       ...(await loadFinance(viewer.member.id)),
-      config: paymentConfig(),
+      config: await getPaymentConfig(),
       policy,
       position: await savingsPosition(db, viewer.member.id),
       savingsLoanLimit: await lendingCapacity(db, viewer.member.id, policy.savingsLimitBps),
@@ -129,15 +135,13 @@ export async function contributeMobileMoney(input: z.input<typeof contributionIn
     const data = contributionInput.parse(input);
     if (data.kind === "loan_fee")
       throw new FinanceError("Loan processing fees are deducted from available savings, not paid by mobile money.");
-    const config = configured();
+    const config = await configured();
     const msisdn = phone(data.phone);
     if (data.feeBps !== config.feeBps)
       throw new FinanceError("The provider fee quote changed. Refresh and confirm the updated total.");
     const quote = quoteCollection(data.amount, config.feeBps);
     if (!["loan_repayment", "loan_fee"].includes(data.kind) && data.amount < 100)
       throw new FinanceError("The minimum contribution is 100 RWF.");
-    if (data.kind === "savings" && data.amount % SHARE_VALUE)
-      throw new FinanceError(`Savings must be whole shares of ${SHARE_VALUE.toLocaleString()} RWF.`);
     const payment = await db.transaction(async (tx) => {
       await lockMember(tx, viewer.member.id);
       const [existing] = await tx.select().from(mobilePayments).where(eq(mobilePayments.id, data.id));
@@ -168,6 +172,7 @@ export async function contributeMobileMoney(input: z.input<typeof contributionIn
         .limit(1);
       if (pending)
         throw new FinanceError("You already have a payment waiting. Check its status before sending another prompt.");
+      if (data.kind === "savings") await assertSavingsAllowed(tx, viewer.member.id, data.period, data.amount);
       if (data.kind === "loan_repayment") {
         if (config.mode !== "live") throw new FinanceError("Loan repayments require live mode.");
         const [loan] = await tx
@@ -219,7 +224,7 @@ export async function requestFunds(input: z.input<typeof requestInput>) {
     const viewer = await ownMember();
     const data = requestInput.parse(input);
     const msisdn = phone(data.phone);
-    const config = paymentConfig();
+    const config = await getPaymentConfig();
     if (data.feeBps !== config.feeBps)
       throw new FinanceError("The provider fee quote changed. Refresh and confirm the updated total.");
     const quote = quotePayout(data.amount, config.feeBps);
@@ -423,7 +428,7 @@ export async function payApprovedRequest(id: string) {
   return run(async () => {
     const admin = await assertAdmin();
     z.uuid().parse(id);
-    const config = configured(true);
+    const config = await configured(true);
     const payment = await db.transaction(async (tx) => {
       const [original] = await tx.select().from(financeRequests).where(eq(financeRequests.id, id));
       if (!original) throw new FinanceError("Request not found.");
@@ -495,9 +500,9 @@ export async function checkMobilePayment(id: string) {
       (payment.direction === "payout" || viewer.member?.id !== payment.memberId)
     )
       throw new FinanceError("Your administrator must check this payout.");
-    if (payment.mode !== configured().mode)
+    if (!(await paymentKeysFor(payment.mode)))
       throw new FinanceError(
-        "This payment belongs to a different provider mode. Ask your administrator to reconcile it with its original app key.",
+        `This payment was made in ${payment.mode} mode. Ask your superadmin to save the ${payment.mode} XendlyPay keys so it can be checked.`,
       );
     await submitPayment(payment);
   });
