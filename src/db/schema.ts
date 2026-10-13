@@ -142,6 +142,50 @@ export const penaltyDelayRequests = pgTable(
   (t) => [uniqueIndex("penalty_delay_member_period").on(t.memberId, t.period)],
 );
 
+/** A member's request for a different monthly share count. Only the secretary changes shares. */
+export const shareChangeRequests = pgTable(
+  "share_change_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    memberId: uuid("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "restrict" }),
+    currentShares: integer("current_shares").notNull(),
+    requestedShares: integer("requested_shares").notNull(),
+    reason: text("reason").notNull(),
+    status: text("status").$type<"pending" | "approved" | "rejected" | "cancelled">().notNull().default("pending"),
+    /** First savings month the approved shares apply to, chosen by the secretary. */
+    effectivePeriod: char("effective_period", { length: 7 }),
+    reviewNote: text("review_note"),
+    reviewedBy: uuid("reviewed_by").references(() => users.id, { onDelete: "restrict" }),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("share_change_request_member").on(t.memberId),
+    uniqueIndex("share_change_request_pending")
+      .on(t.memberId)
+      .where(sql`${t.status} = 'pending'`),
+  ],
+);
+
+/** Monthly shares from a savings month onward; the latest row at or before a month is that month's target. */
+export const memberSharePlans = pgTable(
+  "member_share_plans",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    memberId: uuid("member_id")
+      .notNull()
+      .references(() => members.id, { onDelete: "restrict" }),
+    effectivePeriod: char("effective_period", { length: 7 }).notNull(),
+    shares: integer("shares").notNull(),
+    requestId: uuid("request_id").references(() => shareChangeRequests.id, { onDelete: "restrict" }),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("member_share_plan_period").on(t.memberId, t.effectivePeriod)],
+);
+
 export const pushNotifications = pgTable("push_notifications", {
   id: uuid("id").primaryKey().defaultRandom(),
   eventKey: text("event_key").notNull().unique(),
