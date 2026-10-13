@@ -32,6 +32,11 @@
         "id": "wUQnxbaYB9ax6xrQ",
         "container": 3000,
         "protocol": "http"
+      },
+      {
+        "id": "7NHoXxkT1MVzHvSJ",
+        "container": 3000,
+        "protocol": "http"
       }
     ],
     "process": {}
@@ -51,7 +56,7 @@
     },
     {
       "name": "AUTH_URL",
-      "value": "https://ikimina.eu1.hubfly.app",
+      "value": "https://elayo.eu1.hubfly.app",
       "scope": "runtime"
     },
     {
@@ -62,8 +67,8 @@
   ],
   "remove": {},
   "metadata": {
-    "lastBuildId": "build_c813876c-1bee-4eaf-a02f-8ef0f7df3699",
-    "lastImageDisplay": "hubcell.local/prj_2a52aa7d-0d16-4cad-9d51-a860c2c4c1f2/ikimina:build_c813876c-1bee-4eaf-a02f-8ef0f7df3699-20261011T195006Z",
-    "lastDeployedAt": "2026-10-11T19:51:28Z"
+    "lastBuildId": "build_5e46837d-3ce1-4ca9-8b01-1cd8dda1c75b",
+    "lastImageDisplay": "hubcell.local/prj_2a52aa7d-0d16-4cad-9d51-a860c2c4c1f2/ikimina:build_5e46837d-3ce1-4ca9-8b01-1cd8dda1c75b-20261012T225425Z",
+    "lastDeployedAt": "2026-10-12T22:57:18Z"
   }
 }
