@@ -430,7 +430,7 @@ summary:focus-visible {
   font-size: 9px;
 }
 .contribution-ring > span {
-  color: var(--blue);
+  color: #946600;
 }
 .contribution-status strong {
   font-size: 14px;
@@ -843,6 +843,36 @@ summary:focus-visible {
   font-size: 10px;
   line-height: 1.6;
 }
+/* Desktop: the three stats read as one joined panel beside the savings card. */
+@media (min-width: 1301px) {
+  .overview-summary-grid {
+    column-gap: 0;
+  }
+  .overview-summary-grid > .savings-credit-card {
+    width: calc(100% - 22px);
+  }
+  .overview-summary-grid > .stat {
+    border-radius: 0;
+  }
+  .overview-summary-grid > .stat + .stat {
+    border-left: 0;
+  }
+  .overview-summary-grid > .stat + .stat::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 22%;
+    bottom: 22%;
+    width: 1px;
+    background: var(--line);
+  }
+  .overview-summary-grid > .savings-credit-card + .stat {
+    border-radius: 14px 0 0 14px;
+  }
+  .overview-summary-grid > .stat:last-child {
+    border-radius: 0 14px 14px 0;
+  }
+}
 .admin-activity-grid {
   display: grid;
   grid-template-columns: 1.7fr 1fr;
@@ -850,24 +880,24 @@ summary:focus-visible {
   align-items: start;
 }
 
-/* Warm accents for the administrator overview. */
-.admin-portal .chart-drawing polyline {
+/* Warm accents shared by every portal (admin and member). */
+.portal-app .chart-drawing polyline {
   stroke: var(--gold);
 }
-.admin-portal .chart-drawing circle {
+.portal-app .chart-drawing circle {
   fill: var(--gold);
 }
-.admin-portal .chart-drawing linearGradient stop {
+.portal-app .chart-drawing linearGradient stop {
   stop-color: var(--gold);
 }
-.admin-portal .chart-caption i {
+.portal-app .chart-caption i {
   background: var(--gold);
 }
-.admin-portal .sidebar-message {
+.portal-app .sidebar-message {
   background: #fff;
   border-color: var(--line);
 }
-.admin-portal .sidebar-message strong::after {
+.portal-app .sidebar-message strong::after {
   content: "";
   display: block;
   width: 24px;
@@ -876,23 +906,23 @@ summary:focus-visible {
   border-radius: 2px;
   background: var(--gold);
 }
-.admin-portal .participation-track {
+.portal-app .participation-track {
   background: #fff0c2;
 }
-.admin-portal .participation-track > span {
+.portal-app .participation-track > span {
   background: var(--gold);
 }
-.admin-portal .participation-footer b {
+.portal-app .participation-footer b {
   color: #946600;
 }
-.admin-portal .attention-panel .stat-icon.peach {
+.portal-app .attention-panel .stat-icon.peach {
   background: transparent;
   color: #946600;
 }
-.admin-portal .savings-credit-card-balance p > svg {
+.portal-app .savings-credit-card-balance p > svg {
   color: #ffda70;
 }
-.admin-portal .savings-credit-card-balance p b {
+.portal-app .savings-credit-card-balance p b {
   color: #ffda70;
 }
 
