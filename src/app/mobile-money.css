@@ -55,6 +55,22 @@
   color: #667789;
   line-height: 1.7;
 }
+/* Fees are what members lose to the provider; make them stand out. */
+.finance-fee-summary .finance-fee-line,
+.finance-fee-summary .finance-fee-line strong,
+.finance-record small.danger-text,
+.request-detail-list dd.danger-text {
+  color: #b23f3f;
+}
+.review-decision-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.review-decision-actions > .action {
+  flex: 1 1 150px;
+  justify-content: center;
+}
 .finance-section {
   margin-top: 24px;
 }
@@ -1337,4 +1353,93 @@
     width: 38px;
     height: 38px;
   }
+}
+
+/* Savings amount: a clearly typeable box, a live hint, then quick picks. */
+.savings-amount-entry {
+  display: grid;
+  gap: 8px;
+}
+.savings-amount-entry > label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #22344d;
+}
+.savings-amount-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 0 16px;
+  border: 1.5px solid #cfdcef;
+  border-radius: 12px;
+  background: #fff;
+  cursor: text;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.savings-amount-input:hover {
+  border-color: #a9c1e6;
+}
+.savings-amount-input:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px #0057d914;
+}
+.savings-amount-input.warn {
+  border-color: #e0a100;
+}
+.savings-amount-input.warn:focus-within {
+  box-shadow: 0 0 0 4px #f5b4001f;
+}
+.savings-amount-input > input {
+  flex: 1;
+  min-width: 0;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #13233a;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  font-variant-numeric: tabular-nums;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.savings-amount-input > input::-webkit-inner-spin-button,
+.savings-amount-input > input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.savings-amount-input > input::placeholder {
+  color: #a4afbb;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.savings-amount-input > span {
+  color: #7b8aa0;
+  font-size: 12px;
+  font-weight: 600;
+}
+.savings-amount-hint {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #6e7f93;
+}
+.savings-amount-hint.warn {
+  color: #946600;
+}
+.savings-amount-quick {
+  display: grid;
+  gap: 2px;
+}
+.savings-amount-quick > span {
+  font-size: 11px;
+  color: #7b8aa0;
+}
+.savings-amount-quick .share-shortcuts {
+  margin-top: 6px;
 }
