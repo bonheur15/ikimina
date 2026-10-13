@@ -65,6 +65,41 @@ export function SavingsAmountField({
   const shortcuts = [...new Set([Math.min(SHARE_VALUE, left), Math.ceil(left / 2 / 100) * 100, left])].filter(
     (v) => v >= 100 && v <= left && (v === left || left - v >= 100),
   );
+  const after = left - amount;
+  const hint: { text: string; warn?: boolean } =
+    value === ""
+      ? {
+          text: t(
+            `Type any amount from 100 to ${money(left)} RWF. You can add the rest later this month.`,
+            `Andika amafaranga ayo ari yo yose guhera kuri 100 kugeza kuri ${money(left)} RWF. Ibisigaye wabyongeraho nyuma muri uku kwezi.`,
+          ),
+        }
+      : amount < 100
+        ? { text: t("The smallest amount is 100 RWF.", "Amafaranga make ashoboka ni 100 RWF."), warn: true }
+        : amount > left
+          ? {
+              text: t(
+                `Only ${money(left)} RWF is left this month.`,
+                `Uku kwezi hasigaye ${money(left)} RWF gusa.`,
+              ),
+              warn: true,
+            }
+          : after === 0
+            ? { text: t("This completes this month’s savings.", "Ibi birangiza ubwizigame bw’uku kwezi.") }
+            : after < 100
+              ? {
+                  text: t(
+                    `Leave at least 100 RWF for later, or pay all ${money(left)} RWF.`,
+                    `Siga nibura 100 RWF yo kwishyura nyuma, cyangwa wishyure ${money(left)} RWF yose.`,
+                  ),
+                  warn: true,
+                }
+              : {
+                  text: t(
+                    `${money(after)} RWF will be left — add it any time this month.`,
+                    `Hazasigara ${money(after)} RWF — wabyongeraho igihe icyo ari cyo cyose muri uku kwezi.`,
+                  ),
+                };
   return (
     <div className="share-amount-field">
       <div className="share-value-card">
@@ -95,35 +130,44 @@ export function SavingsAmountField({
         </p>
       ) : left > 0 ? (
         <>
-          <label className="field" htmlFor={id}>
-            {t("Amount to save now (RWF)", "Amafaranga uzigama ubu (RWF)")}
-          </label>
-          <input
-            id={id}
-            aria-label={ariaLabel ?? t("Savings amount", "Amafaranga y’ubwizigame")}
-            type="number"
-            inputMode="numeric"
-            min="100"
-            max={left}
-            step="1"
-            required
-            placeholder={money(left)}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-          />
-          <div className="share-shortcuts" aria-label={t("Quick amounts", "Amafaranga yihuse")}>
-            {shortcuts.map((v) => (
-              <button type="button" key={v} aria-pressed={amount === v} onClick={() => onChange(String(v))}>
-                {v === left ? t("All that’s left", "Ibisigaye byose") : `${money(v)} RWF`}
-              </button>
-            ))}
+          <div className="savings-amount-entry">
+            <label htmlFor={id}>{t("How much do you want to save now?", "Ni angahe ushaka kuzigama ubu?")}</label>
+            <label className={`savings-amount-input ${hint.warn ? "warn" : ""}`} htmlFor={id}>
+              <input
+                id={id}
+                aria-label={ariaLabel}
+                aria-describedby={`${id}-hint`}
+                aria-invalid={hint.warn || undefined}
+                type="number"
+                inputMode="numeric"
+                min="100"
+                max={left}
+                step="1"
+                required
+                placeholder={t("Type an amount", "Andika amafaranga")}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+              />
+              <span aria-hidden="true">RWF</span>
+            </label>
+            <p id={`${id}-hint`} className={`savings-amount-hint ${hint.warn ? "warn" : ""}`} aria-live="polite">
+              {hint.text}
+            </p>
           </div>
-          <p className="muted">
-            {t(
-              "Pay any amount from 100 RWF. You can add the rest later this month.",
-              "Ishyura amafaranga ayo ari yo yose guhera kuri 100 RWF. Ibisigaye wabyongeraho nyuma muri uku kwezi.",
-            )}
-          </p>
+          {shortcuts.length > 0 && (
+            <div className="savings-amount-quick">
+              <span>{t("Or pick an amount", "Cyangwa uhitemo amafaranga")}</span>
+              <div className="share-shortcuts" aria-label={t("Quick amounts", "Amafaranga yihuse")}>
+                {shortcuts.map((v) => (
+                  <button type="button" key={v} aria-pressed={amount === v} onClick={() => onChange(String(v))}>
+                    {v === left
+                      ? `${t("All that’s left", "Ibisigaye byose")} · ${money(v)}`
+                      : `${money(v)} RWF`}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       ) : (
         <p className="form-success" role="status">
