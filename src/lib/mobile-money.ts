@@ -14,6 +14,7 @@ import {
 import { kigaliToday } from "@/lib/portal-data";
 import { normalizePhone, providerTransaction, ProviderError, xendlyRequest, type ProviderTransaction } from "./xendly";
 import { loadContributionProofs } from "./contribution-proofs";
+import { paymentKeysFor } from "./payment-settings";
 import { lockFinance } from "./finance-lock";
 import {
   fundBackings,
@@ -314,9 +315,12 @@ export async function settlePayment(payment: ProviderTransaction, deliveryId?: s
 export async function submitPayment(local: PaymentRow) {
   if (!unresolved.includes(local.status as "created" | "pending")) return;
   try {
+    // Each payment stays with the app key of the mode it was created in, even after the active mode changes.
+    const apiKey = (await paymentKeysFor(local.mode))?.apiKey;
     let result = local.providerId
-      ? await xendlyRequest(`/v1/payments/${local.providerId}`)
+      ? await xendlyRequest(apiKey, `/v1/payments/${local.providerId}`)
       : await xendlyRequest(
+          apiKey,
           local.direction === "collect" ? "/v1/payments" : "/v1/payouts",
           {
             amount: local.amount,
@@ -345,7 +349,7 @@ export async function submitPayment(local: PaymentRow) {
         .where(
           and(eq(mobilePayments.id, local.id), eq(mobilePayments.status, "created"), isNull(mobilePayments.providerId)),
         );
-      result = await xendlyRequest(`/v1/payments/${snapshot.id}`);
+      result = await xendlyRequest(apiKey, `/v1/payments/${snapshot.id}`);
     }
     await settlePayment(providerTransaction.parse(result));
   } catch (error) {
