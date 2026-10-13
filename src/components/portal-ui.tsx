@@ -71,6 +71,7 @@ export function Action({
   secondary = false,
   className = "",
   type = "button",
+  value,
   disabled = false,
   busy = false,
 }: {
@@ -79,6 +80,8 @@ export function Action({
   secondary?: boolean;
   className?: string;
   type?: "button" | "submit";
+  /** Tells a form which of several submit buttons was used. */
+  value?: string;
   disabled?: boolean;
   busy?: boolean;
 }) {
@@ -86,6 +89,7 @@ export function Action({
   return (
     <button
       type={type}
+      value={value}
       className={`action ${secondary ? "secondary" : ""} ${className}`}
       onClick={onClick}
       disabled={disabled || busy}
