@@ -14,7 +14,8 @@ import {
 } from "@/db/schema";
 import { lockFinance, type FinanceTx } from "./finance-lock";
 import { canApproveContributions, canReadGroup, type Role } from "./permissions";
-import { kigaliToday, SHARE_VALUE } from "./portal-data";
+import { kigaliToday } from "./portal-data";
+import { assertSavingsAllowed, ShareError } from "./share-plans";
 
 export class ProofError extends Error {}
 export type ProofActor = { id: string; role: Role; memberId: string | null };
@@ -53,8 +54,6 @@ async function notify(tx: FinanceTx, userId: string, eventKey: string, title: st
 export async function submitContributionProof(actor: ProofActor, input: unknown, file: File) {
   if (!actor.memberId) throw new ProofError("Sign in with a linked member account.");
   const data = inputSchema.parse(input);
-  if (data.kind === "savings" && data.amount % SHARE_VALUE)
-    throw new ProofError(`Savings must be whole shares of ${SHARE_VALUE.toLocaleString()} RWF.`);
   if (data.method !== "Cash" && (!data.paymentReference || data.paymentReference.length < 3))
     throw new ProofError("Enter the transaction reference from your receipt.");
   const paidAt = new Date(`${data.paidOn}T00:00:00+02:00`);
@@ -113,6 +112,10 @@ export async function submitContributionProof(actor: ProofActor, input: unknown,
       throw new ProofError(
         "This receipt or transaction reference has already been submitted. Check your activity before submitting again.",
       );
+    if (data.kind === "savings")
+      await assertSavingsAllowed(tx, member.id, data.period, data.amount).catch((error) => {
+        throw error instanceof ShareError ? new ProofError(error.message) : error;
+      });
     await tx.insert(contributionProofs).values({
       id: data.id,
       kind: data.kind,
