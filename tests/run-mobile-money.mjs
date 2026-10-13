@@ -10,6 +10,7 @@ try {
     ["tests/xendly.test.ts", "tests/payment-fees.test.ts", "tests/loan-policy.test.ts", "tests/mobile-money.test.ts"],
     ["tests/loans.test.ts"],
     ["tests/contribution-proofs.test.ts"],
+    ["tests/shares.test.ts"],
   ]) {
     const database = `elayo_mobile_money_test_${randomUUID().replaceAll("-", "")}`;
     const testUrl = new URL(process.env.DATABASE_URL);
