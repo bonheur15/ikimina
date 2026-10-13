@@ -5,7 +5,9 @@ import {
   createStaffAccount,
   saveLoanPolicy,
   saveNotificationSettings,
+  savePaymentSettings,
   staffSignInLink,
+  testPaymentConnection,
   triggerNotifications,
   updateStaffAccess,
 } from "@/app/actions/governance";
@@ -24,6 +26,16 @@ type Notifications = {
   policy: NotificationPolicy;
   pending: number;
   failed: number;
+};
+type PaymentMode = "test" | "live";
+type KeySlot = { source: "dashboard" | "environment" | null; hasKey: boolean; hasSecret: boolean; unreadable: boolean };
+type Payments = {
+  mode: PaymentMode;
+  feeBps: number;
+  configured: boolean;
+  disabled: boolean;
+  slots: Record<PaymentMode, KeySlot>;
+  webhookUrl: string;
 };
 type Result = { ok: boolean; error?: string };
 function useOperation() {
@@ -118,12 +130,14 @@ export function GovernancePanel({
   bootstrap,
   accounts,
   policy,
+  payments,
   notifications,
 }: {
   role: Role;
   bootstrap: boolean;
   accounts: Account[];
   policy: LoanPolicy | null;
+  payments: Payments | null;
   notifications: Notifications | null;
 }) {
   return (
@@ -135,8 +149,8 @@ export function GovernancePanel({
             Roles & policies<span className="heading-dot">.</span>
           </h1>
           <p>
-            Superadmin controls accounts, lending rules and notifications. Managers approve loans; the secretary manages
-            records.
+            Superadmin controls accounts, lending rules, payment keys and notifications. Managers approve loans; the
+            secretary manages records.
           </p>
         </div>
       </div>
@@ -153,7 +167,7 @@ export function GovernancePanel({
             <tbody>
               <tr>
                 <td>Superadmin</td>
-                <td>Accounts, loan policy, OneSignal settings, manual reminders and records</td>
+                <td>Accounts, loan policy, XendlyPay keys, OneSignal settings, manual reminders and records</td>
               </tr>
               <tr>
                 <td>Secretary</td>
@@ -186,6 +200,7 @@ export function GovernancePanel({
         </section>
       )}
       {policy && <LoanPolicyForm key={policy.version} policy={policy} />}
+      {payments && <PaymentForm key={JSON.stringify(payments)} data={payments} />}
       {notifications && (
         <NotificationForm key={`${notifications.appId}:${JSON.stringify(notifications.policy)}`} data={notifications} />
       )}
@@ -533,6 +548,155 @@ function LoanPolicyForm({ policy }: { policy: LoanPolicy }) {
         </Action>
         {op.feedback}
       </form>
+    </section>
+  );
+}
+const sourceLabel = (slot: KeySlot) =>
+  slot.unreadable
+    ? "Saved keys cannot be read (AUTH_SECRET changed); enter them again"
+    : slot.source === "dashboard"
+      ? slot.hasKey && slot.hasSecret
+        ? "Saved here"
+        : "Incomplete"
+      : slot.source === "environment"
+        ? "Using server environment keys"
+        : "Not set";
+function PaymentKeyFields({ mode, slot }: { mode: PaymentMode; slot: KeySlot }) {
+  const saved = slot.source === "dashboard";
+  return (
+    <fieldset className="governance-rule">
+      <legend>
+        {mode === "test" ? "Test app keys" : "Live app keys"} · {sourceLabel(slot)}
+      </legend>
+      <label className="field">
+        API key
+        <input
+          name={`${mode}.apiKey`}
+          type="password"
+          autoComplete="new-password"
+          placeholder={saved && slot.hasKey ? "Stored securely; leave blank to keep it" : `Enter the ${mode} API key`}
+        />
+      </label>
+      <label className="field">
+        Webhook signing secret
+        <input
+          name={`${mode}.webhookSecret`}
+          type="password"
+          autoComplete="new-password"
+          placeholder={
+            saved && slot.hasSecret ? "Stored securely; leave blank to keep it" : `Enter the ${mode} webhook secret`
+          }
+        />
+      </label>
+      {saved && (
+        <CheckField
+          name={`${mode}.clear`}
+          label={`Remove saved ${mode} keys (falls back to server environment keys, if any)`}
+          value={false}
+        />
+      )}
+    </fieldset>
+  );
+}
+function PaymentForm({ data }: { data: Payments }) {
+  const op = useOperation();
+  const check = useOperation();
+  const [result, setResult] = useState("");
+  return (
+    <section className="panel finance-section">
+      <SectionHeading
+        title="XendlyPay mobile money"
+        subtitle={`${data.disabled ? "Paused" : data.configured ? "Connected" : "Awaiting connection"} · ${data.mode === "live" ? "Live" : "Test"} mode · ${data.feeBps / 100}% provider fee`}
+      />
+      <form
+        className="portal-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const form = new FormData(e.currentTarget),
+            text = (name: string) => String(form.get(name) ?? ""),
+            keys = (mode: PaymentMode) => ({
+              apiKey: text(`${mode}.apiKey`),
+              webhookSecret: text(`${mode}.webhookSecret`),
+              clear: form.get(`${mode}.clear`) === "on",
+            });
+          op.run(
+            () =>
+              savePaymentSettings({
+                mode: text("mode"),
+                feeBps: Math.round(Number(form.get("feePercent")) * 100),
+                test: keys("test"),
+                live: keys("live"),
+                disabled: form.get("disabled") === "on",
+              }),
+            "Payment settings saved. New payments use these keys immediately.",
+          );
+        }}
+      >
+        <div className="form-grid">
+          <Pick
+            name="mode"
+            label="Active mode for new payments"
+            value={data.mode}
+            options={[
+              ["test", "Test (registered test phones only)"],
+              ["live", "Live (real members, cashouts enabled)"],
+            ]}
+          />
+          <NumberField
+            name="feePercent"
+            label="Provider fee members pay (%)"
+            value={data.feeBps / 100}
+            max={99.99}
+            step="0.01"
+          />
+        </div>
+        <div className="finance-grid">
+          <PaymentKeyFields mode="test" slot={data.slots.test} />
+          <PaymentKeyFields mode="live" slot={data.slots.live} />
+        </div>
+        <label className="field">
+          Webhook URL to register in both XendlyPay apps
+          <input readOnly value={data.webhookUrl} onFocus={(e) => e.currentTarget.select()} />
+        </label>
+        <p className="muted">
+          Keys are encrypted on the server and never returned to this form. Keys saved here replace the server
+          environment keys for that mode. Payments already started keep using the keys of the mode they were made in.
+        </p>
+        <CheckField name="disabled" label="Pause mobile money payments (keeps saved keys)" value={data.disabled} />
+        <Action type="submit" busy={op.pending}>
+          Save payment settings
+        </Action>
+        {op.feedback}
+      </form>
+      <hr />
+      <div className="form-grid">
+        {(["test", "live"] as const).map((mode) => (
+          <Action
+            key={mode}
+            secondary
+            busy={check.pending}
+            onClick={() =>
+              check.run(async () => {
+                setResult("");
+                const r = await testPaymentConnection(mode);
+                if (r.ok)
+                  setResult(
+                    `${mode === "live" ? "Live" : "Test"} key accepted by XendlyPay${
+                      r.value.available === undefined
+                        ? ""
+                        : ` · ${r.value.available.toLocaleString()} RWF available, ${(r.value.pending ?? 0).toLocaleString()} RWF pending`
+                    }.`,
+                  );
+                return r;
+              }, "Connection check completed.")
+            }
+          >
+            Check {mode} connection
+          </Action>
+        ))}
+      </div>
+      {result && <p role="status">{result}</p>}
+      {check.feedback}
     </section>
   );
 }
